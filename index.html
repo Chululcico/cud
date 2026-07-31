@@ -445,6 +445,7 @@ document.addEventListener('DOMContentLoaded', function(){
             arr.push({ src: val[keys[i]].src, timestamp: val[keys[i]].timestamp || 0 });
           arr.sort(function(a, b){ return (b.timestamp || 0) - (a.timestamp || 0); });
         }
+        if (!arr.length && typeof FALLBACK_GALLERY !== 'undefined') arr = FALLBACK_GALLERY;
         cacheSet('cud_gallery_cache', arr);
         renderCombinedGallery();
       } catch(e) {}
@@ -476,6 +477,7 @@ document.addEventListener('DOMContentLoaded', function(){
             arr.push({ name: sp.name || '', tier: sp.tier || '', img: sp.img || '', url: sp.url || '' });
           }
         }
+        if (!arr.length && typeof FALLBACK_SPONSORS !== 'undefined') arr = FALLBACK_SPONSORS;
         cacheSet('cud_sponsors_cache', arr);
         renderSponsorsVisual(arr);
       } catch(e) {}
