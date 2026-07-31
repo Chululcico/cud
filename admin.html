@@ -524,7 +524,6 @@ function setupListeners() {
       if (typeof FALLBACK_GALLERY !== 'undefined') {
         FALLBACK_GALLERY.forEach(function(item,i){ cachedGallery['fallback_'+i] = item; });
         var up = {};
-        up['data/gallery'] = null;
         FALLBACK_GALLERY.forEach(function(item){ var k=pushId(); up['data/gallery/'+k] = { src: item.src||'', timestamp: item.timestamp||Date.now() }; });
         db.ref().update(up).catch(function(e){ console.warn('Seed a Firebase falló:', e); });
       }
@@ -540,7 +539,6 @@ function setupListeners() {
       if (typeof FALLBACK_SPONSORS !== 'undefined') {
         FALLBACK_SPONSORS.forEach(function(item,i){ cachedSponsors['fallback_'+i] = item; });
         var up = {};
-        up['data/sponsors'] = null;
         FALLBACK_SPONSORS.forEach(function(item){ var k=pushId(); up['data/sponsors/'+k] = { name: item.name||'', tier: item.tier||'', img: item.img||'', url: item.url||'' }; });
         db.ref().update(up).catch(function(e){ console.warn('Seed a Firebase falló:', e); });
       }
@@ -670,12 +668,15 @@ function setSyncStatus(msg,type) {
 
 function applyImported(d) {
   var updates = {};
-  updates['data/gallery'] = null;
-  updates['data/sponsors'] = null;
-  updates['reviews/pending'] = null;
-  if (d.gallery&&Array.isArray(d.gallery)) { d.gallery.forEach(function(src){ if(typeof src==='string'){var k=pushId(); updates['data/gallery/'+k]={src:src,timestamp:Date.now()};}}); }
-  if (d.sponsors&&Array.isArray(d.sponsors)) { d.sponsors.forEach(function(sp){ var k=pushId(); updates['data/sponsors/'+k]=sp; }); }
-  if (d.pending&&Array.isArray(d.pending)) { d.pending.forEach(function(it){ var k=pushId(); updates['reviews/pending/'+k]=it; }); }
+  var gal = {};
+  if (d.gallery&&Array.isArray(d.gallery)) { d.gallery.forEach(function(src){ if(typeof src==='string'){var k=pushId(); gal[k]={src:src,timestamp:Date.now()};}}); }
+  updates['data/gallery']=gal;
+  var spo = {};
+  if (d.sponsors&&Array.isArray(d.sponsors)) { d.sponsors.forEach(function(sp){ var k=pushId(); spo[k]=sp; }); }
+  updates['data/sponsors']=spo;
+  var pend = {};
+  if (d.pending&&Array.isArray(d.pending)) { d.pending.forEach(function(it){ var k=pushId(); pend[k]=it; }); }
+  updates['reviews/pending']=pend;
   if (d.settings) { updates['data/config']=d.settings; }
   db.ref().update(updates).then(function(){
     if (d.settings) cacheSet('cud_config_fb',d.settings);
@@ -720,10 +721,8 @@ document.getElementById('btn-sync-now').addEventListener('click', function(){
   var updates = {};
   var gal = currentGalleryData();
   var spo = currentSponsorsData();
-  updates['data/gallery']=null;
-  updates['data/sponsors']=null;
-  Object.keys(gal).forEach(function(k){ updates['data/gallery/'+k]=gal[k]; });
-  Object.keys(spo).forEach(function(k){ updates['data/sponsors/'+k]=spo[k]; });
+  updates['data/gallery']=gal;
+  updates['data/sponsors']=spo;
   var s = cachedConfig&&cachedConfig.logo ? cachedConfig : defaultConfig;
   updates['data/config']=s;
   db.ref().update(updates).then(function(){
