@@ -117,10 +117,6 @@
   <div class="auth-box">
     <h1>Admin CUD Ibi</h1>
     <p class="auth-sub">Accede con tu cuenta de administrador</p>
-    <div class="auth-tabs">
-      <button class="auth-tab active" data-auth-tab="login">Iniciar sesión</button>
-      <button class="auth-tab" data-auth-tab="register">Registrarse</button>
-    </div>
     <div class="auth-form active" id="auth-login">
       <div class="field">
         <label>Email</label>
@@ -132,22 +128,6 @@
       </div>
       <button class="btn btn-block" id="login-submit">Acceder</button>
       <div class="auth-err" id="login-error"></div>
-    </div>
-    <div class="auth-form" id="auth-register">
-      <div class="field">
-        <label>Email</label>
-        <input type="email" id="reg-email" placeholder="tu@email.com" autocomplete="email">
-      </div>
-      <div class="field">
-        <label>Contraseña</label>
-        <input type="password" id="reg-pass" placeholder="Mínimo 6 caracteres" autocomplete="new-password">
-      </div>
-      <div class="field">
-        <label>Repite la contraseña</label>
-        <input type="password" id="reg-pass2" placeholder="Repite la contraseña" autocomplete="new-password">
-      </div>
-      <button class="btn btn-block" id="register-submit">Crear cuenta</button>
-      <div class="auth-err" id="register-error"></div>
     </div>
   </div>
 </div>
@@ -274,21 +254,11 @@
       <div class="toolbar"><h3>Sincronizar datos</h3></div>
 
       <div class="sync-section">
-        <h4>Sincronización en la nube ☁️</h4>
-        <p>Sube todos los datos a la nube con un solo clic. Luego abre el enlace desde otro dispositivo y los datos se importarán automáticamente.</p>
+        <h4>Sincronización con Firebase ☁️</h4>
+        <p>Sube a la nube todos los datos actuales (fotos, patrocinadores y configuración). La web pública y este panel se sincronizan automáticamente.</p>
         <div id="sync-status" style="display:none;padding:12px 14px;border-radius:4px;margin-bottom:16px;font-size:13px;font-family:'JetBrains Mono';"></div>
         <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;">
           <button class="btn-sm" id="btn-sync-now">Sincronizar ahora</button>
-          <span style="font-size:11px;color:var(--grey);">o</span>
-          <input type="url" id="input-sync-url" placeholder="Pega aquí un enlace de sincronización" style="background:var(--black);border:1px solid var(--grey-line);color:var(--white);padding:10px 12px;font-size:12px;border-radius:2px;min-width:260px;flex:1;">
-          <button class="btn-outline-sm" id="btn-sync-connect">Conectar</button>
-        </div>
-        <div id="sync-url-display" style="margin-top:16px;display:none;">
-          <label style="font-family:'JetBrains Mono';font-size:10px;text-transform:uppercase;color:var(--grey);letter-spacing:0.06em;">Enlace de sincronización (compártelo con otros dispositivos)</label>
-          <div style="display:flex;gap:8px;margin-top:4px;">
-            <input type="url" id="sync-url-output" readonly style="flex:1;background:var(--black);border:1px solid var(--grey-line);color:var(--white);padding:10px 12px;font-size:12px;border-radius:2px;">
-            <button class="btn-outline-sm" id="btn-copy-url">Copiar</button>
-          </div>
         </div>
       </div>
 
@@ -378,7 +348,6 @@ var cachedPending = {};
 var cachedConfig = {};
 
 var listenersActive = false;
-var syncUrl = cacheGet('cud_sync_url', '');
 
 function toast(msg) {
   var el = document.getElementById('toast');
@@ -545,12 +514,34 @@ function setupListeners() {
     renderPending();
   });
   db.ref('data/gallery').on('value', function(snap){
-    cachedGallery = snap.val()||{};
+    var val = snap.val();
+    if (val && Object.keys(val).length) { cachedGallery = val; }
+    else {
+      cachedGallery = {};
+      if (typeof FALLBACK_GALLERY !== 'undefined') {
+        FALLBACK_GALLERY.forEach(function(item,i){ cachedGallery['fallback_'+i] = item; });
+        var up = {};
+        up['data/gallery'] = null;
+        FALLBACK_GALLERY.forEach(function(item){ var k=pushId(); up['data/gallery/'+k] = { src: item.src||'', timestamp: item.timestamp||Date.now() }; });
+        db.ref().update(up).catch(function(){});
+      }
+    }
     cacheSet('cud_gallery_fb', cachedGallery);
     renderGallery();
   });
   db.ref('data/sponsors').on('value', function(snap){
-    cachedSponsors = snap.val()||{};
+    var val = snap.val();
+    if (val && Object.keys(val).length) { cachedSponsors = val; }
+    else {
+      cachedSponsors = {};
+      if (typeof FALLBACK_SPONSORS !== 'undefined') {
+        FALLBACK_SPONSORS.forEach(function(item,i){ cachedSponsors['fallback_'+i] = item; });
+        var up = {};
+        up['data/sponsors'] = null;
+        FALLBACK_SPONSORS.forEach(function(item){ var k=pushId(); up['data/sponsors/'+k] = { name: item.name||'', tier: item.tier||'', img: item.img||'', url: item.url||'' }; });
+        db.ref().update(up).catch(function(){});
+      }
+    }
     cacheSet('cud_sponsors_fb', cachedSponsors);
     renderSponsors();
   });
@@ -615,20 +606,10 @@ function authErr(id, msg) {
   el.classList.add('show');
 }
 
-document.querySelectorAll('.auth-tab').forEach(function(btn){
-  btn.addEventListener('click', function(){
-    document.querySelectorAll('.auth-tab').forEach(function(b){ b.classList.remove('active'); });
-    btn.classList.add('active');
-    document.getElementById('auth-login').classList.toggle('active', btn.dataset.authTab === 'login');
-    document.getElementById('auth-register').classList.toggle('active', btn.dataset.authTab === 'register');
-    ['login-error','register-error'].forEach(function(id){ document.getElementById(id).classList.remove('show'); });
-  });
-});
-
-function setBusy(btnId, busy) {
-  var btn = document.getElementById(btnId);
+function setBusy(busy) {
+  var btn = document.getElementById('login-submit');
   if (busy) { btn.disabled = true; btn.textContent = 'Espere…'; }
-  else { btn.disabled = false; btn.textContent = (btnId === 'login-submit') ? 'Acceder' : 'Crear cuenta'; }
+  else { btn.disabled = false; btn.textContent = 'Acceder'; }
 }
 
 document.getElementById('login-submit').addEventListener('click', function(){
@@ -636,23 +617,9 @@ document.getElementById('login-submit').addEventListener('click', function(){
   var pass = document.getElementById('login-pass').value;
   if (!email || !pass) { authErr('login-error', 'Introduce email y contraseña'); return; }
   if (!auth) { authErr('login-error', 'Firebase Auth no disponible'); return; }
-  setBusy('login-submit', true);
+  setBusy(true);
   auth.signInWithEmailAndPassword(email, pass).then(function(){})
-    .catch(function(err){ authErr('login-error', err.message); setBusy('login-submit', false); });
-});
-
-document.getElementById('register-submit').addEventListener('click', function(){
-  var email = document.getElementById('reg-email').value.trim();
-  var pass = document.getElementById('reg-pass').value;
-  var pass2 = document.getElementById('reg-pass2').value;
-  if (!email || !pass) { authErr('register-error', 'Introduce email y contraseña'); return; }
-  if (pass.length < 6) { authErr('register-error', 'La contraseña debe tener al menos 6 caracteres'); return; }
-  if (pass !== pass2) { authErr('register-error', 'Las contraseñas no coinciden'); return; }
-  if (!auth) { authErr('register-error', 'Firebase Auth no disponible'); return; }
-  setBusy('register-submit', true);
-  auth.createUserWithEmailAndPassword(email, pass).then(function(){
-      toast('Cuenta creada. Acceso concedido.');
-    }).catch(function(err){ authErr('register-error', err.message); setBusy('register-submit', false); });
+    .catch(function(err){ authErr('login-error', err.message); setBusy(false); });
 });
 
 document.getElementById('logout-btn').addEventListener('click', function(){
@@ -678,11 +645,15 @@ document.querySelectorAll('.tabs button').forEach(function(btn){
   });
 });
 
-// ---- SYNC ----
-function showSyncUrl() {
-  var d=document.getElementById('sync-url-display');
-  var i=document.getElementById('sync-url-output');
-  if (syncUrl) { d.style.display='block'; i.value=syncUrl; } else { d.style.display='none'; }
+// ---- SYNC (Firebase) ----
+function pushId() {
+  var CHARS='-0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz';
+  var ts=new Date().getTime();
+  var tsStr='';
+  for (var i=7;i>=0;i--){ tsStr+=CHARS.charAt(ts>>(i*5)&0x1f); }
+  var rnd='';
+  for (var j=0;j<12;j++){ rnd+=CHARS.charAt(Math.floor(Math.random()*64)); }
+  return tsStr+rnd;
 }
 
 function setSyncStatus(msg,type) {
@@ -719,60 +690,48 @@ function getSyncPayload() {
   };
 }
 
+function currentGalleryData() {
+  var out = {};
+  if (cachedGallery && Object.keys(cachedGallery).length) {
+    Object.keys(cachedGallery).forEach(function(k){ var kk=pushId(); out[kk]={ src: cachedGallery[k].src||'', timestamp: cachedGallery[k].timestamp||Date.now() }; });
+  } else if (typeof FALLBACK_GALLERY !== 'undefined') {
+    FALLBACK_GALLERY.forEach(function(item){ var k=pushId(); out[k]={ src: item.src||'', timestamp: item.timestamp||Date.now() }; });
+  }
+  return out;
+}
+
+function currentSponsorsData() {
+  var out = {};
+  if (cachedSponsors && Object.keys(cachedSponsors).length) {
+    Object.keys(cachedSponsors).forEach(function(k){ var kk=pushId(); out[kk]={ name: cachedSponsors[k].name||'', tier: cachedSponsors[k].tier||'', img: cachedSponsors[k].img||'', url: cachedSponsors[k].url||'' }; });
+  } else if (typeof FALLBACK_SPONSORS !== 'undefined') {
+    FALLBACK_SPONSORS.forEach(function(item){ var k=pushId(); out[k]={ name: item.name||'', tier: item.tier||'', img: item.img||'', url: item.url||'' }; });
+  }
+  return out;
+}
+
 document.getElementById('btn-sync-now').addEventListener('click', function(){
   var btn=this; btn.disabled=true; btn.textContent='Sincronizando…';
-  setSyncStatus('Subiendo datos a la nube…','info');
-  var payload=getSyncPayload();
-  fetch(syncUrl||'https://jsonblob.com/api/jsonBlob',{
-    method:syncUrl?'PUT':'POST',
-    headers:{'Content-Type':'application/json'},
-    body:JSON.stringify(payload)
-  }).then(function(r){
-    if(!r.ok) throw new Error('Error '+r.status);
-    if(!syncUrl){
-      syncUrl=r.headers.get('Location');
-      cacheSet('cud_sync_url',syncUrl);
-      setTimeout(autoSyncPull,500);
-    } else { toast('Datos sincronizados'); }
-    showSyncUrl();
-    setSyncStatus('Datos sincronizados correctamente en la nube','ok');
+  setSyncStatus('Subiendo datos a Firebase…','info');
+  if (!db) { setSyncStatus('Firebase no disponible. No se pudo sincronizar.','err'); btn.textContent='Sincronizar ahora'; btn.disabled=false; return; }
+  var updates = {};
+  var gal = currentGalleryData();
+  var spo = currentSponsorsData();
+  updates['data/gallery']=null;
+  updates['data/sponsors']=null;
+  Object.keys(gal).forEach(function(k){ updates['data/gallery/'+k]=gal[k]; });
+  Object.keys(spo).forEach(function(k){ updates['data/sponsors/'+k]=spo[k]; });
+  var s = cachedConfig&&cachedConfig.logo ? cachedConfig : defaultConfig;
+  updates['data/config']=s;
+  db.ref().update(updates).then(function(){
+    setSyncStatus('Datos sincronizados correctamente en Firebase','ok');
+    toast('Datos sincronizados');
     btn.textContent='Sincronizar ahora'; btn.disabled=false;
   }).catch(function(err){
-    setSyncStatus('Error de conexión: '+err.message+'. Usa la opción Exportar/Importar como alternativa.','err');
+    setSyncStatus('Error: '+err.message,'err');
     btn.textContent='Sincronizar ahora'; btn.disabled=false;
   });
 });
-
-document.getElementById('btn-sync-connect').addEventListener('click', function(){
-  var url=document.getElementById('input-sync-url').value.trim();
-  if(!url){toast('Introduce un enlace de sincronización');return;}
-  setSyncStatus('Descargando datos desde la nube…','info');
-  fetch(url).then(function(r){
-    if(!r.ok) throw new Error('Error '+r.status);
-    return r.json();
-  }).then(function(d){
-    syncUrl=url; cacheSet('cud_sync_url',syncUrl);
-    applyImported(d); showSyncUrl();
-    setSyncStatus('Datos importados desde la nube correctamente','ok');
-  }).catch(function(err){ setSyncStatus('Error: '+err.message,'err'); });
-});
-
-document.getElementById('btn-copy-url').addEventListener('click', function(){
-  var i=document.getElementById('sync-url-output');
-  i.select();
-  if(navigator.clipboard){ navigator.clipboard.writeText(i.value).then(function(){toast('Enlace copiado');}); }
-  else { document.execCommand('copy'); toast('Enlace copiado'); }
-});
-
-function autoSyncPull() {
-  if(!syncUrl)return;
-  fetch(syncUrl).then(function(r){
-    if(!r.ok)return;
-    return r.json();
-  }).then(function(d){
-    if(d&&d.settings){ applyImported(d); toast('Datos sincronizados desde la nube'); }
-  }).catch(function(){});
-}
 
 document.getElementById('btn-export').addEventListener('click', function(){
   var payload=getSyncPayload();
@@ -809,14 +768,11 @@ document.getElementById('btn-reset').addEventListener('click', function(){
   updates['reviews/rejected']=null;
   updates['data/config']=defaultConfig;
   db.ref().update(updates).then(function(){
-    cacheSet('cud_sync_url','');
-    syncUrl='';
     toast('Datos restablecidos');
   }).catch(function(err){ toast('Error: '+err.message); });
 });
 
 // ---- INIT ----
-showSyncUrl();
 </script>
 </body>
 </html>
