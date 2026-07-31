@@ -4,12 +4,12 @@
       ".read": true,
       "config": {
         ".write": "auth.uid !== null",
-        ".validate": "newData.isObject()",
+        ".validate": "newData.hasChildren()",
         "logo": { ".validate": "newData.isString() && newData.val().length <= 500" },
         "equipacion": { ".validate": "newData.isString() && newData.val().length <= 500" },
         "title": { ".validate": "newData.isString() && newData.val().length <= 200" },
         "forms": {
-          ".validate": "newData.isObject()",
+          ".validate": "newData.hasChildren()",
           "escuelaInsc": { ".validate": "newData.isString() && newData.val().length <= 500" },
           "escuelaRopa": { ".validate": "newData.isString() && newData.val().length <= 500" },
           "fedInsc": { ".validate": "newData.isString() && newData.val().length <= 500" },
