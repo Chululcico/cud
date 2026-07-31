@@ -42,7 +42,7 @@
     "reviews": {
       "pending": {
         ".read": true,
-        ".write": "auth.uid !== null",
+        ".write": true,
         "$key": {
           ".validate": "newData.hasChildren(['src', 'autor', 'fecha', 'timestamp'])",
           "src": { ".validate": "newData.isString() && newData.val().length <= 1000000" },

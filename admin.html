@@ -152,7 +152,8 @@
     <div class="tab-content active" id="tab-galeria">
       <div class="toolbar"><h3>Galería de imágenes</h3></div>
       <div class="pending-section" id="pending-section">
-        <h4 style="margin-bottom:16px;color:var(--red);">Pendientes de revisión</h4>
+        <h4 style="margin-bottom:16px;color:var(--red);">Imágenes propuestas</h4>
+        <p style="font-size:12px;color:var(--grey);margin-bottom:16px;">Los visitantes de la web envían aquí sus fotos como solicitud para publicarlas en la galería. Aprueba o deniega cada una.</p>
         <div class="pending-grid" id="pending-grid"></div>
       </div>
       <div style="margin-bottom:16px;"><h4>Fotos publicadas</h4></div>
@@ -361,8 +362,9 @@ function renderPending() {
   var keys = Object.keys(cachedPending);
   var grid = document.getElementById('pending-grid');
   var section = document.getElementById('pending-section');
-  if (keys.length === 0) { section.style.display = 'none'; return; }
+  if (!grid || !section) return;
   section.style.display = 'block';
+  if (keys.length === 0) { grid.innerHTML = '<div class="empty-state">No hay imágenes propuestas pendientes</div>'; return; }
   grid.innerHTML = keys.map(function(key){
     var item = cachedPending[key];
     var info = (item.titulo || item.autor)
@@ -380,6 +382,7 @@ function renderPending() {
       var data = { src: item.src, titulo: item.titulo||'', autor: item.autor||'', fecha: item.fecha||'', timestamp: item.timestamp||Date.now() };
       var updates = {};
       updates['reviews/approved/' + key] = data;
+      updates['data/gallery/' + key] = { src: data.src, timestamp: Date.now() };
       updates['reviews/pending/' + key] = null;
       db.ref().update(updates).then(function(){ toast('Foto aprobada y publicada'); }).catch(function(err){ toast('Error: '+err.message); });
     });
@@ -523,7 +526,7 @@ function setupListeners() {
         var up = {};
         up['data/gallery'] = null;
         FALLBACK_GALLERY.forEach(function(item){ var k=pushId(); up['data/gallery/'+k] = { src: item.src||'', timestamp: item.timestamp||Date.now() }; });
-        db.ref().update(up).catch(function(){});
+        db.ref().update(up).catch(function(e){ console.warn('Seed a Firebase falló:', e); });
       }
     }
     cacheSet('cud_gallery_fb', cachedGallery);
@@ -539,7 +542,7 @@ function setupListeners() {
         var up = {};
         up['data/sponsors'] = null;
         FALLBACK_SPONSORS.forEach(function(item){ var k=pushId(); up['data/sponsors/'+k] = { name: item.name||'', tier: item.tier||'', img: item.img||'', url: item.url||'' }; });
-        db.ref().update(up).catch(function(){});
+        db.ref().update(up).catch(function(e){ console.warn('Seed a Firebase falló:', e); });
       }
     }
     cacheSet('cud_sponsors_fb', cachedSponsors);
