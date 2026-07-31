@@ -1,0 +1,100 @@
+{
+  "rules": {
+    "data": {
+      ".read": true,
+      "config": {
+        ".write": "auth.uid !== null",
+        ".validate": "newData.isObject()",
+        "logo": { ".validate": "newData.isString() && newData.val().length <= 500" },
+        "equipacion": { ".validate": "newData.isString() && newData.val().length <= 500" },
+        "title": { ".validate": "newData.isString() && newData.val().length <= 200" },
+        "forms": {
+          ".validate": "newData.isObject()",
+          "escuelaInsc": { ".validate": "newData.isString() && newData.val().length <= 500" },
+          "escuelaRopa": { ".validate": "newData.isString() && newData.val().length <= 500" },
+          "fedInsc": { ".validate": "newData.isString() && newData.val().length <= 500" },
+          "fedRopa": { ".validate": "newData.isString() && newData.val().length <= 500" }
+        },
+        "$other": { ".validate": false }
+      },
+      "gallery": {
+        ".write": "auth.uid !== null",
+        "$key": {
+          ".validate": "newData.hasChildren(['src', 'timestamp'])",
+          "src": { ".validate": "newData.isString() && newData.val().length <= 1000000" },
+          "timestamp": { ".validate": "newData.isNumber()" },
+          "$other": { ".validate": false }
+        }
+      },
+      "sponsors": {
+        ".write": "auth.uid !== null",
+        "$key": {
+          ".validate": "newData.hasChildren(['name'])",
+          "name": { ".validate": "newData.isString() && newData.val().length <= 100" },
+          "tier": { ".validate": "newData.isString() && newData.val().length <= 100" },
+          "img": { ".validate": "newData.isString() && newData.val().length <= 1000000" },
+          "url": { ".validate": "newData.isString() && newData.val().length <= 500" },
+          "$other": { ".validate": false }
+        }
+      },
+      "$other": { ".validate": false }
+    },
+    "reviews": {
+      "pending": {
+        ".read": true,
+        ".write": "auth.uid !== null",
+        "$key": {
+          ".validate": "newData.hasChildren(['src', 'autor', 'fecha', 'timestamp'])",
+          "src": { ".validate": "newData.isString() && newData.val().length <= 1000000" },
+          "titulo": { ".validate": "newData.isString() && newData.val().length <= 100" },
+          "autor": { ".validate": "newData.isString() && newData.val().length <= 100" },
+          "fecha": { ".validate": "newData.isString() && newData.val().length <= 50" },
+          "timestamp": { ".validate": "newData.isNumber()" },
+          "vid": { ".validate": "newData.isString() && newData.val().length <= 50" },
+          "$other": { ".validate": false }
+        }
+      },
+      "approved": {
+        ".read": true,
+        ".write": "auth.uid !== null",
+        "$key": {
+          ".validate": "newData.hasChildren(['src', 'autor', 'fecha', 'timestamp'])",
+          "src": { ".validate": "newData.isString() && newData.val().length <= 1000000" },
+          "titulo": { ".validate": "newData.isString() && newData.val().length <= 100" },
+          "autor": { ".validate": "newData.isString() && newData.val().length <= 100" },
+          "fecha": { ".validate": "newData.isString() && newData.val().length <= 50" },
+          "timestamp": { ".validate": "newData.isNumber()" },
+          "$other": { ".validate": false }
+        }
+      },
+      "rejected": {
+        ".read": "auth.uid !== null",
+        ".write": "auth.uid !== null",
+        "$key": {
+          ".validate": "newData.hasChildren(['src', 'autor', 'fecha', 'timestamp'])",
+          "src": { ".validate": "newData.isString() && newData.val().length <= 1000000" },
+          "titulo": { ".validate": "newData.isString() && newData.val().length <= 100" },
+          "autor": { ".validate": "newData.isString() && newData.val().length <= 100" },
+          "fecha": { ".validate": "newData.isString() && newData.val().length <= 50" },
+          "timestamp": { ".validate": "newData.isNumber()" },
+          "$other": { ".validate": false }
+        }
+      }
+    },
+    "visits": {
+      ".read": "auth.uid !== null",
+      ".write": "auth.uid !== null",
+      "$key": {
+        ".validate": "newData.hasChildren(['vid', 'fecha', 'hora', 'timestamp', 'userAgent'])",
+        "vid": { ".validate": "newData.isString() && newData.val().length <= 50" },
+        "fecha": { ".validate": "newData.isString() && newData.val().length <= 20" },
+        "hora": { ".validate": "newData.isString() && newData.val().length <= 10" },
+        "timestamp": { ".validate": "newData.isNumber()" },
+        "userAgent": { ".validate": "newData.isString() && newData.val().length <= 500" },
+        "region": { ".validate": "newData.isString() && newData.val().length <= 100" },
+        "ccAA": { ".validate": "newData.isString() && newData.val().length <= 100" },
+        "$other": { ".validate": false }
+      }
+    }
+  }
+}
