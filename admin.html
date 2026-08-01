@@ -246,6 +246,16 @@
           <label>Ropa Federados</label>
           <input type="url" id="input-form-fed-ropa" placeholder="https://docs.google.com/forms/...">
         </div>
+        <div class="settings-field" style="margin-top:16px;border-top:1px solid var(--grey-line);padding-top:16px;">
+          <label>Imagen pack de ropa — Escuela</label>
+          <div style="margin-bottom:8px;"><img id="preview-pack-escuela" style="max-width:180px;max-height:180px;border-radius:4px;object-fit:contain;" alt="Pack Escuela"></div>
+          <input type="file" id="input-pack-escuela" accept="image/*">
+        </div>
+        <div class="settings-field">
+          <label>Imagen pack de ropa — Federados</label>
+          <div style="margin-bottom:8px;"><img id="preview-pack-fed" style="max-width:180px;max-height:180px;border-radius:4px;object-fit:contain;" alt="Pack Federados"></div>
+          <input type="file" id="input-pack-fed" accept="image/*">
+        </div>
         <button class="btn-sm" id="btn-save-forms">Guardar formularios</button>
       </div>
     </div>
@@ -339,7 +349,9 @@ var defaultConfig = {
     escuelaInsc: 'https://docs.google.com/forms/d/e/1FAIpQLSdV4FCQmQikMH5ayyORuGxSv3m6Oz3_TERJroORv_u3VzYhCg/viewform',
     escuelaRopa: 'https://docs.google.com/forms/d/e/1FAIpQLSdSQo-NOPeY9vFquxXNcVu2__hG8CHO2Uyxr6uMZ5qWj1JQlg/viewform',
     fedInsc: 'https://docs.google.com/forms/d/e/1FAIpQLSdvZIilERgZ2dG4_JhdxMxNBxJjuxnAatBkuqPQhjhAxf2gdA/viewform',
-    fedRopa: 'https://docs.google.com/forms/d/e/1FAIpQLSdKCsOlqiKpZZpG5Wd9ywiskfnhX_OK_a9rge_1x9D6Yke1yw/viewform'
+    fedRopa: 'https://docs.google.com/forms/d/e/1FAIpQLSdKCsOlqiKpZZpG5Wd9ywiskfnhX_OK_a9rge_1x9D6Yke1yw/viewform',
+    packEscuelaImg: '',
+    packFedImg: ''
   }
 };
 
@@ -475,6 +487,8 @@ function loadConfigTab() {
   document.getElementById('input-form-escuela-ropa').value = (s.forms&&s.forms.escuelaRopa)||'';
   document.getElementById('input-form-fed-insc').value = (s.forms&&s.forms.fedInsc)||'';
   document.getElementById('input-form-fed-ropa').value = (s.forms&&s.forms.fedRopa)||'';
+  document.getElementById('preview-pack-escuela').src = (s.forms&&s.forms.packEscuelaImg)||'';
+  document.getElementById('preview-pack-fed').src = (s.forms&&s.forms.packFedImg)||'';
 }
 
 document.getElementById('input-logo').addEventListener('change', function(){
@@ -491,16 +505,33 @@ document.getElementById('input-equip').addEventListener('change', function(){
   r.readAsDataURL(this.files[0]);
 });
 
+document.getElementById('input-pack-escuela').addEventListener('change', function(){
+  if(!this.files||!this.files[0])return;
+  var r=new FileReader();
+  r.onload=function(e){ db.ref('data/config/forms/packEscuelaImg').set(e.target.result).then(function(){toast('Imagen pack Escuela actualizada');}).catch(function(err){toast('Error: '+err.message);}); };
+  r.readAsDataURL(this.files[0]);
+});
+
+document.getElementById('input-pack-fed').addEventListener('change', function(){
+  if(!this.files||!this.files[0])return;
+  var r=new FileReader();
+  r.onload=function(e){ db.ref('data/config/forms/packFedImg').set(e.target.result).then(function(){toast('Imagen pack Federados actualizada');}).catch(function(err){toast('Error: '+err.message);}); };
+  r.readAsDataURL(this.files[0]);
+});
+
 document.getElementById('input-title').addEventListener('change', function(){
   db.ref('data/config/title').set(this.value).catch(function(err){ toast('Error: '+err.message); });
 });
 
 document.getElementById('btn-save-forms').addEventListener('click', function(){
+  var cur = (cachedConfig&&cachedConfig.forms)||defaultConfig.forms||{};
   var forms = {
     escuelaInsc: document.getElementById('input-form-escuela-insc').value,
     escuelaRopa: document.getElementById('input-form-escuela-ropa').value,
     fedInsc: document.getElementById('input-form-fed-insc').value,
-    fedRopa: document.getElementById('input-form-fed-ropa').value
+    fedRopa: document.getElementById('input-form-fed-ropa').value,
+    packEscuelaImg: cur.packEscuelaImg||'',
+    packFedImg: cur.packFedImg||''
   };
   db.ref('data/config/forms').set(forms).then(function(){ toast('Formularios guardados'); }).catch(function(err){ toast('Error: '+err.message); });
 });
