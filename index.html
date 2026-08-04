@@ -4,14 +4,14 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>CUD Ibi Ciudad del Juguete</title>
-<link rel="icon" type="image/png" href="https://i.postimg.cc/pX9K47DS/Logo-sin-fondo.png">
-<link rel="apple-touch-icon" href="https://i.postimg.cc/pX9K47DS/Logo-sin-fondo.png">
+<link rel="icon" type="image/png" href="https://i.postimg.cc/QMZ4XbYK/escudo-sin-fondo.png">
+<link rel="apple-touch-icon" href="https://i.postimg.cc/QMZ4XbYK/escudo-sin-fondo.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
-<link rel="preload" as="image" href="https://i.postimg.cc/pX9K47DS/Logo-sin-fondo.png" fetchpriority="high">
+<link rel="preload" as="image" href="https://i.postimg.cc/QMZ4XbYK/escudo-sin-fondo.png" fetchpriority="high">
   <link rel="preload" as="image" href="https://i.postimg.cc/JzHDtM7Z/8bfaff40-85cd-42f0-939a-4fde50a200d5(1).png" fetchpriority="high">
-<link rel="preload" as="image" href="https://i.ibb.co/v4kpYvt1/Whats-App-Image-2026-07-23-at-17-52-05-Photoroom.png">
+<link rel="preload" as="image" href="https://files.catbox.moe/1l04z2.png">
 <style>
   :root{
     --black:#0a0a0c;
@@ -78,11 +78,13 @@
   .section-head p.desc{color:var(--grey);font-size:14.5px;margin-top:12px;max-width:560px;line-height:1.6;}
 
   /* EQUIPACIÓN SHOWCASE */
-  .equip-showcase{display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:center;}
-  .equip-showcase .equip-img{background:var(--black-soft);border:1px solid var(--grey-line);border-radius:24px;padding:32px;display:flex;align-items:center;justify-content:center;aspect-ratio:3/4;overflow:hidden;}
-  .equip-showcase .equip-img img{width:100%;height:100%;object-fit:contain;border-radius:16px;}
-  .equip-showcase .equip-text h2{font-size:clamp(28px,4vw,42px);margin-bottom:12px;}
-  .equip-showcase .equip-text p{color:var(--grey);font-size:15px;line-height:1.7;margin-bottom:20px;}
+  .equip-showcase{display:grid;grid-template-columns:1fr 1fr;gap:32px;align-items:start;}
+  .equip-card .equip-img{background:var(--black-soft);border:1px solid var(--grey-line);border-radius:24px;padding:32px;display:flex;align-items:center;justify-content:center;aspect-ratio:3/4;overflow:hidden;}
+  .equip-card .equip-img img{width:100%;height:100%;object-fit:contain;border-radius:16px;}
+  .equip-card .equip-label{font-family:'Oswald';font-size:clamp(22px,3vw,30px);text-transform:uppercase;letter-spacing:0.08em;text-align:center;margin-top:18px;color:var(--white);}
+  .equip-heading{text-align:center;margin-bottom:40px;}
+  .equip-heading .eyebrow{margin-bottom:12px;display:block;}
+  .equip-heading h2{font-size:clamp(28px,4vw,42px);}
   /* FORM CARDS */
   .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;}
   .form-card{
@@ -202,7 +204,7 @@
 <header class="main-nav">
   <div class="wrap nav-inner">
     <a href="#" class="crest">
-      <img class="logo-img" src="https://i.postimg.cc/pX9K47DS/Logo-sin-fondo.png" alt="CUD Ibi" id="nav-logo">
+      <img class="logo-img" src="https://i.postimg.cc/QMZ4XbYK/escudo-sin-fondo.png" alt="CUD Ibi" id="nav-logo">
       <span class="crest-text">
         <span class="club">CUD Ibi</span>
         <span class="sub">CIUDAD DEL JUGUETE</span>
@@ -222,7 +224,7 @@
 <!-- HERO LOGO -->
 <div class="hero-logo">
   <div class="wrap">
-    <img src="https://i.postimg.cc/pX9K47DS/Logo-sin-fondo.png" alt="CUD Ibi" id="hero-logo-img" fetchpriority="high">
+    <img src="https://i.postimg.cc/QMZ4XbYK/escudo-sin-fondo.png" alt="CUD Ibi" id="hero-logo-img" fetchpriority="high">
     <h1 id="hero-title">CUD Ibi  Ciudad del Juguete</h1>
 
   </div>
@@ -231,13 +233,22 @@
 <!-- EQUIPACIÓN -->
 <section id="equipacion">
   <div class="wrap">
+    <div class="equip-heading">
+      <span class="eyebrow">Equipación</span>
+      <h2>Camisetas Oficiales</h2>
+    </div>
     <div class="equip-showcase">
-      <div class="equip-img">
-        <img src="https://i.ibb.co/v4kpYvt1/Whats-App-Image-2026-07-23-at-17-52-05-Photoroom.png" alt="Camiseta oficial" id="equip-img" fetchpriority="high">
+      <div class="equip-card">
+        <div class="equip-img">
+          <img src="https://files.catbox.moe/1l04z2.png" alt="Camiseta local" id="equip-img" fetchpriority="high">
+        </div>
+        <h3 class="equip-label">LOCAL</h3>
       </div>
-      <div class="equip-text">
-        <h2>Equipación Oficial</h2>
-        <p>CUD Ibi  Ciudad del Juguete</p>
+      <div class="equip-card">
+        <div class="equip-img">
+          <img src="https://files.catbox.moe/0wpbgk.png" alt="Camiseta visitante" fetchpriority="high">
+        </div>
+        <h3 class="equip-label">VISITANTE</h3>
       </div>
     </div>
   </div>
@@ -331,8 +342,8 @@
     <div class="sponsor-cta">
       <p>¿Tu empresa quiere patrocinar al CUD? Escríbenos y te enviamos el dossier de patrocinio.</p>
       <div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center;">
-        <a href="mailto:cudibiciudaddeljuguete@gmail.com" class="btn-outline">cudibiciudaddeljuguete@gmail.com</a>
-        <a href="tel:658636528" class="btn-outline">658 636 528</a>
+        <a href="mailto:cudibiciudaddeljuguete@gmail.com" class="btn-outline">Correo</a>
+        <a href="tel:658636528" class="btn-outline">Teléfono</a>
       </div>
     </div>
   </div>
@@ -401,8 +412,8 @@ try { ['cud_gallery_cache','cud_reviews_cache','cud_sponsors_cache','cud_config_
 document.addEventListener('DOMContentLoaded', function(){
   // ---- FALLBACK DEFAULTS ----
   var defaults = {
-    logo: 'https://i.postimg.cc/pX9K47DS/Logo-sin-fondo.png',
-    equipacion: 'https://i.ibb.co/v4kpYvt1/Whats-App-Image-2026-07-23-at-17-52-05-Photoroom.png',
+    logo: 'https://i.postimg.cc/QMZ4XbYK/escudo-sin-fondo.png',
+    equipacion: 'https://i.postimg.cc/RWGQdcBx/camiseta-roja.png',
     title: 'CUD Ibi  Ciudad del Juguete',
     forms: {
       escuelaInsc: 'https://docs.google.com/forms/d/e/1FAIpQLSdV4FCQmQikMH5ayyORuGxSv3m6Oz3_TERJroORv_u3VzYhCg/viewform',
