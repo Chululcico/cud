@@ -10,8 +10,8 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
 <link rel="preload" as="image" href="https://i.postimg.cc/QMZ4XbYK/escudo-sin-fondo.png" fetchpriority="high">
-  <link rel="preload" as="image" href="https://i.postimg.cc/JzHDtM7Z/8bfaff40-85cd-42f0-939a-4fde50a200d5(1).png" fetchpriority="high">
-<link rel="preload" as="image" href="https://files.catbox.moe/1l04z2.png">
+<link rel="preload" as="image" href="https://files.catbox.moe/3t1fso.jpg">
+<link rel="preload" as="image" href="https://files.catbox.moe/pf2k2a.jpg">
 <style>
   :root{
     --black:#0a0a0c;
@@ -114,6 +114,15 @@
   .pack-content p{font-size:14px;color:var(--grey);line-height:1.6;margin-bottom:18px;}
   .pack-content .btn-group{display:flex;gap:12px;flex-wrap:wrap;}
 
+  /* LOTERÍA NAVIDAD */
+  .loteria-card{display:grid;grid-template-columns:1fr 1fr;gap:32px;align-items:center;background:var(--black-soft);border:1px solid var(--grey-line);border-radius:4px;overflow:hidden;padding:28px;}
+  .loteria-img{display:flex;align-items:center;justify-content:center;}
+  .loteria-img img{width:100%;max-width:560px;height:auto;object-fit:contain;border-radius:10px;display:block;}
+  .loteria-content{display:flex;flex-direction:column;align-items:flex-start;gap:10px;}
+  .loteria-content h2{font-family:'Oswald';font-size:clamp(28px,4vw,42px);margin-bottom:6px;}
+  .loteria-content p{font-size:15px;color:var(--grey);line-height:1.7;margin:0;}
+  .loteria-content .btn{margin-top:12px;}
+
   /* GALERÍA */
   .gallery-upload{margin-top:36px;}
   .gallery-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;}
@@ -189,6 +198,7 @@
     .form-grid{grid-template-columns:1fr;}
     .equip-showcase{grid-template-columns:1fr;}
     .pack-row{grid-template-columns:1fr;}
+    .loteria-card{grid-template-columns:1fr;}
     .gallery-grid{grid-template-columns:repeat(2,1fr);}
     .sponsor-grid{grid-template-columns:1fr 1fr;}
     form{padding:26px;}
@@ -240,13 +250,13 @@
     <div class="equip-showcase">
       <div class="equip-card">
         <div class="equip-img">
-          <img src="https://files.catbox.moe/1l04z2.png" alt="Camiseta local" id="equip-img" fetchpriority="high">
+          <img src="https://files.catbox.moe/3t1fso.jpg" alt="Camiseta local" id="equip-img" fetchpriority="high">
         </div>
         <h3 class="equip-label">LOCAL</h3>
       </div>
       <div class="equip-card">
         <div class="equip-img">
-          <img src="https://files.catbox.moe/0wpbgk.png" alt="Camiseta visitante" fetchpriority="high">
+          <img src="https://files.catbox.moe/o6j3rc.jpg" alt="Camiseta visitante" fetchpriority="high">
         </div>
         <h3 class="equip-label">VISITANTE</h3>
       </div>
@@ -289,7 +299,7 @@
       <p class="desc">Todo para los jugadores de la escuela deportiva: inscripción y pack de ropa oficial.</p>
     </div>
     <div class="pack-row">
-      <img class="pack-img" id="pack-img-escuela" src="https://i.postimg.cc/FRbx28LX/Chat-GPT-Image-4-ago-2026-19-53-02.png" alt="Pack ropa escuela">
+      <img class="pack-img" id="pack-img-escuela" src="https://files.catbox.moe/xu3382.jpg" alt="Pack ropa escuela">
       <div class="pack-card">
         <div class="pack-content">
           <div class="card-icon">🎒</div>
@@ -314,7 +324,7 @@
       <p class="desc">Para jugadores federados o que quieran tramitar la licencia. Incluye el pack de ropa oficial.</p>
     </div>
     <div class="pack-row">
-      <img class="pack-img" id="pack-img-fed" src="https://i.postimg.cc/26dxPMZD/Chat-GPT-Image-4-ago-2026-20-02-26.png" alt="Pack ropa federados">
+      <img class="pack-img" id="pack-img-fed" src="https://files.catbox.moe/nvpm27.jpg" alt="Pack ropa federados">
       <div class="pack-card">
         <div class="pack-content">
           <div class="card-icon">👕</div>
@@ -325,6 +335,26 @@
             <a href="https://docs.google.com/forms/d/e/1FAIpQLSdKCsOlqiKpZZpG5Wd9ywiskfnhX_OK_a9rge_1x9D6Yke1yw/viewform" target="_blank" rel="noopener" class="btn" id="link-fed-ropa">Formulario de ropa →</a>
           </div>
         </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- LOTERÍA NAVIDAD -->
+<section id="loteria-navidad">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="eyebrow">Sorteo Especial</span>
+    </div>
+    <div class="loteria-card">
+      <div class="loteria-img">
+        <img src="https://files.catbox.moe/pf2k2a.jpg" alt="Lotería de Navidad" fetchpriority="high">
+      </div>
+      <div class="loteria-content">
+        <h2>Lotería Navidad</h2>
+        <p>Ya tenemos la lotería del club.</p>
+        <p>Si no quieres quedarte sin premio, haz la reserva de tu décimo.</p>
+        <a href="tel:658636528" class="btn">Llamar al 658 636 528</a>
       </div>
     </div>
   </div>
@@ -413,15 +443,16 @@ document.addEventListener('DOMContentLoaded', function(){
   // ---- FALLBACK DEFAULTS ----
   var defaults = {
     logo: 'https://i.postimg.cc/QMZ4XbYK/escudo-sin-fondo.png',
-    equipacion: 'https://i.postimg.cc/RWGQdcBx/camiseta-roja.png',
+    equipacion: 'https://files.catbox.moe/3t1fso.jpg',
     title: 'CUD Ibi  Ciudad del Juguete',
+    loteriaNavidad: true,
     forms: {
       escuelaInsc: 'https://docs.google.com/forms/d/e/1FAIpQLSdV4FCQmQikMH5ayyORuGxSv3m6Oz3_TERJroORv_u3VzYhCg/viewform',
       escuelaRopa: 'https://docs.google.com/forms/d/e/1FAIpQLSdSQo-NOPeY9vFquxXNcVu2__hG8CHO2Uyxr6uMZ5qWj1JQlg/viewform',
       fedInsc: 'https://docs.google.com/forms/d/e/1FAIpQLSdvZIilERgZ2dG4_JhdxMxNBxJjuxnAatBkuqPQhjhAxf2gdA/viewform',
       fedRopa: 'https://docs.google.com/forms/d/e/1FAIpQLSdKCsOlqiKpZZpG5Wd9ywiskfnhX_OK_a9rge_1x9D6Yke1yw/viewform',
-      packEscuelaImg: 'https://i.postimg.cc/FRbx28LX/Chat-GPT-Image-4-ago-2026-19-53-02.png',
-      packFedImg: 'https://i.postimg.cc/26dxPMZD/Chat-GPT-Image-4-ago-2026-20-02-26.png'
+      packEscuelaImg: 'https://files.catbox.moe/xu3382.jpg',
+      packFedImg: 'https://files.catbox.moe/nvpm27.jpg'
     }
   };
 
@@ -523,6 +554,8 @@ document.addEventListener('DOMContentLoaded', function(){
     if (navLogo) navLogo.src = s.logo || defaults.logo;
     if (equipImg) equipImg.src = s.equipacion || defaults.equipacion;
     if (heroTitle) heroTitle.textContent = s.title || defaults.title;
+    var lot = document.getElementById('loteria-navidad');
+    if (lot) lot.style.display = (s.loteriaNavidad !== undefined ? s.loteriaNavidad : defaults.loteriaNavidad) ? 'block' : 'none';
     if (s.forms) {
       var el;
       el = document.getElementById('link-escuela-insc'); if (el) el.href = s.forms.escuelaInsc || defaults.forms.escuelaInsc;
@@ -572,7 +605,7 @@ document.addEventListener('DOMContentLoaded', function(){
       if (sp.img) {
         var aOpen = sp.url ? '<a href="' + escAttr(sp.url) + '" target="_blank" rel="noopener">' : '';
         var aClose = sp.url ? '</a>' : '';
-        return '<div class="sponsor-img">' + aOpen + '<img src="' + escAttr(sp.img) + '" alt="' + escAttr(sp.name) + '" fetchpriority="high" decoding="async">' + aClose + '</div>';
+        return '<div class="sponsor-img">' + aOpen + '<img src="' + escAttr(sp.img) + '" alt="' + escAttr(sp.name) + '" loading="lazy" decoding="async">' + aClose + '</div>';
       }
       var tierHtml = sp.tier ? '<div class="tier">' + esc(sp.tier) + '</div>' : '';
       return '<div class="sponsor-card">' + tierHtml + '<div class="sp">' + esc(sp.name) + '</div></div>';

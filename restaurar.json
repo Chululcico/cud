@@ -1,0 +1,31 @@
+{
+  "gallery": [
+    "https://files.catbox.moe/cm7gic.jpg",
+    "https://files.catbox.moe/26g1pb.jpg",
+    "https://files.catbox.moe/46g6ad.jpg",
+    "https://files.catbox.moe/v3o668.jpg"
+  ],
+  "sponsors": [
+    {
+      "img": "https://files.catbox.moe/c01dzr.jpg",
+      "name": "Fontajab",
+      "tier": "Patrocinador Oficial",
+      "url": "https://fontajab.com/"
+    }
+  ],
+  "pending": [],
+  "settings": {
+    "logo": "https://i.postimg.cc/QMZ4XbYK/escudo-sin-fondo.png",
+    "equipacion": "https://files.catbox.moe/3t1fso.jpg",
+    "title": "CUD Ibi  Ciudad del Juguete",
+    "loteriaNavidad": true,
+    "forms": {
+      "escuelaInsc": "https://docs.google.com/forms/d/e/1FAIpQLSdV4FCQmQikMH5ayyORuGxSv3m6Oz3_TERJroORv_u3VzYhCg/viewform",
+      "escuelaRopa": "https://docs.google.com/forms/d/e/1FAIpQLSdSQo-NOPeY9vFquxXNcVu2__hG8CHO2Uyxr6uMZ5qWj1JQlg/viewform",
+      "fedInsc": "https://docs.google.com/forms/d/e/1FAIpQLSdvZIilERgZ2dG4_JhdxMxNBxJjuxnAatBkuqPQhjhAxf2gdA/viewform",
+      "fedRopa": "https://docs.google.com/forms/d/e/1FAIpQLSdKCsOlqiKpZZpG5Wd9ywiskfnhX_OK_a9rge_1x9D6Yke1yw/viewform",
+      "packEscuelaImg": "https://files.catbox.moe/xu3382.jpg",
+      "packFedImg": "https://files.catbox.moe/nvpm27.jpg"
+    }
+  }
+}

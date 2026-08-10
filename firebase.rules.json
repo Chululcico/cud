@@ -5,15 +5,18 @@
       "config": {
         ".write": "auth.uid !== null",
         ".validate": "newData.hasChildren()",
-        "logo": { ".validate": "newData.isString() && newData.val().length <= 500" },
-        "equipacion": { ".validate": "newData.isString() && newData.val().length <= 500" },
+        "logo": { ".validate": "newData.isString() && newData.val().length <= 1000000" },
+        "equipacion": { ".validate": "newData.isString() && newData.val().length <= 1000000" },
         "title": { ".validate": "newData.isString() && newData.val().length <= 200" },
+        "loteriaNavidad": { ".validate": "newData.isBoolean()" },
         "forms": {
           ".validate": "newData.hasChildren()",
           "escuelaInsc": { ".validate": "newData.isString() && newData.val().length <= 500" },
           "escuelaRopa": { ".validate": "newData.isString() && newData.val().length <= 500" },
           "fedInsc": { ".validate": "newData.isString() && newData.val().length <= 500" },
-          "fedRopa": { ".validate": "newData.isString() && newData.val().length <= 500" }
+          "fedRopa": { ".validate": "newData.isString() && newData.val().length <= 500" },
+          "packEscuelaImg": { ".validate": "newData.isString() && newData.val().length <= 1000000" },
+          "packFedImg": { ".validate": "newData.isString() && newData.val().length <= 1000000" }
         },
         "$other": { ".validate": false }
       },

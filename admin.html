@@ -260,6 +260,17 @@
         </div>
         <button class="btn-sm" id="btn-save-forms">Guardar formularios</button>
       </div>
+
+      <div class="settings-section">
+        <h4>Lotería de Navidad</h4>
+        <div class="settings-field">
+          <label style="display:flex;gap:10px;align-items:center;cursor:pointer;">
+            <input type="checkbox" id="input-loteria" style="width:auto;height:auto;">
+            <span>Activar apartado Lotería Navidad en la web</span>
+          </label>
+        </div>
+        <p style="margin-top:8px;font-size:12px;color:var(--grey);">La imagen y el teléfono ya están fijos; este interruptor muestra u oculta la sección completa en la web.</p>
+      </div>
     </div>
 
     <!-- TAB SYNC -->
@@ -338,15 +349,16 @@ try { ['cud_gallery_cache','cud_reviews_cache','cud_sponsors_cache','cud_config_
 <script>
 var defaultConfig = {
   logo: 'https://i.postimg.cc/QMZ4XbYK/escudo-sin-fondo.png',
-  equipacion: 'https://files.catbox.moe/1l04z2.png',
+  equipacion: 'https://files.catbox.moe/3t1fso.jpg',
   title: 'CUD Ibi  Ciudad del Juguete',
+  loteriaNavidad: true,
   forms: {
     escuelaInsc: 'https://docs.google.com/forms/d/e/1FAIpQLSdV4FCQmQikMH5ayyORuGxSv3m6Oz3_TERJroORv_u3VzYhCg/viewform',
     escuelaRopa: 'https://docs.google.com/forms/d/e/1FAIpQLSdSQo-NOPeY9vFquxXNcVu2__hG8CHO2Uyxr6uMZ5qWj1JQlg/viewform',
     fedInsc: 'https://docs.google.com/forms/d/e/1FAIpQLSdvZIilERgZ2dG4_JhdxMxNBxJjuxnAatBkuqPQhjhAxf2gdA/viewform',
     fedRopa: 'https://docs.google.com/forms/d/e/1FAIpQLSdKCsOlqiKpZZpG5Wd9ywiskfnhX_OK_a9rge_1x9D6Yke1yw/viewform',
-    packEscuelaImg: 'https://i.postimg.cc/FRbx28LX/Chat-GPT-Image-4-ago-2026-19-53-02.png',
-    packFedImg: 'https://i.postimg.cc/26dxPMZD/Chat-GPT-Image-4-ago-2026-20-02-26.png'
+    packEscuelaImg: 'https://files.catbox.moe/xu3382.jpg',
+    packFedImg: 'https://files.catbox.moe/nvpm27.jpg'
   }
 };
 
@@ -484,6 +496,7 @@ function loadConfigTab() {
   document.getElementById('input-form-fed-ropa').value = (s.forms&&s.forms.fedRopa)||'';
   document.getElementById('preview-pack-escuela').src = (s.forms&&s.forms.packEscuelaImg)||'';
   document.getElementById('preview-pack-fed').src = (s.forms&&s.forms.packFedImg)||'';
+  document.getElementById('input-loteria').checked = s.loteriaNavidad !== undefined ? !!s.loteriaNavidad : !!defaultConfig.loteriaNavidad;
 }
 
 document.getElementById('input-logo').addEventListener('change', function(){
@@ -516,6 +529,13 @@ document.getElementById('input-pack-fed').addEventListener('change', function(){
 
 document.getElementById('input-title').addEventListener('change', function(){
   db.ref('data/config/title').set(this.value).catch(function(err){ toast('Error: '+err.message); });
+});
+
+document.getElementById('input-loteria').addEventListener('change', function(){
+  var checked = this.checked;
+  db.ref('data/config/loteriaNavidad').set(checked).then(function(){
+    toast(checked ? 'Lotería Navidad activada' : 'Lotería Navidad desactivada');
+  }).catch(function(err){ toast('Error: '+err.message); });
 });
 
 document.getElementById('btn-save-forms').addEventListener('click', function(){
