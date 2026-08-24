@@ -262,6 +262,60 @@
       </div>
 
       <div class="settings-section">
+        <h4>Campus Pretemporada</h4>
+        <div class="settings-field">
+          <label style="display:flex;gap:10px;align-items:center;cursor:pointer;">
+            <input type="checkbox" id="input-campus-activo" style="width:auto;height:auto;">
+            <span>Activar apartado Campus Pretemporada en la web</span>
+          </label>
+        </div>
+        <div class="settings-field">
+          <label>Título</label>
+          <input type="text" id="input-campus-titulo" placeholder="⚽🔥 Campus Pretemporada…">
+        </div>
+        <div class="settings-field">
+          <label>Introducción</label>
+          <textarea id="input-campus-intro" rows="3" placeholder="Texto de presentación del campus"></textarea>
+        </div>
+        <div class="settings-field">
+          <label>Contenidos del campus (una línea por punto)</label>
+          <textarea id="input-campus-items" rows="6" placeholder="⚽ Técnica individual…&#10;🧠 Táctica…"></textarea>
+        </div>
+        <div class="form-row" style="margin-bottom:0;">
+          <div class="field">
+            <label>Fechas / días</label>
+            <input type="text" id="input-campus-fechas" placeholder="📅 De lunes a viernes">
+          </div>
+          <div class="field">
+            <label>Horario</label>
+            <input type="text" id="input-campus-horario" placeholder="🕘 09:00 a 14:00">
+          </div>
+          <div class="field">
+            <label>Precio</label>
+            <input type="text" id="input-campus-precio" placeholder="💰 Precio: 60 €">
+          </div>
+        </div>
+        <div class="settings-field" style="margin-top:16px;">
+          <label>Texto de cierre</label>
+          <textarea id="input-campus-cierre" rows="2"></textarea>
+        </div>
+        <div class="settings-field">
+          <label>Pie de sección</label>
+          <textarea id="input-campus-pie" rows="2" placeholder="🔥 380 ACADEMY × C.U.D. IBI…&#10;🏆 DESARROLLAMOS CAMPEONES"></textarea>
+        </div>
+        <div class="settings-field">
+          <label>Enlace de inscripción</label>
+          <input type="url" id="input-campus-url" placeholder="https://docs.google.com/forms/...">
+        </div>
+        <div class="settings-field">
+          <label>Imagen del campus</label>
+          <div style="margin-bottom:8px;"><img id="preview-campus" style="max-width:180px;max-height:180px;border-radius:4px;object-fit:contain;" alt="Campus"></div>
+          <input type="file" id="input-campus-img" accept="image/*">
+        </div>
+        <button class="btn-sm" id="btn-save-campus">Guardar campus</button>
+      </div>
+
+      <div class="settings-section">
         <h4>Lotería de Navidad</h4>
         <div class="settings-field">
           <label style="display:flex;gap:10px;align-items:center;cursor:pointer;">
@@ -352,6 +406,19 @@ var defaultConfig = {
   equipacion: 'https://files.catbox.moe/3t1fso.jpg',
   title: 'CUD Ibi  Ciudad del Juguete',
   loteriaNavidad: true,
+  campus: {
+    activo: true,
+    titulo: 'Campus Pretemporada 380 Academy × C.U.D. Ibi Ciudad del Juguete',
+    intro: '¡Arrancamos la temporada de la mejor manera! 💪⚽\nDel 31 de agosto al 4 de septiembre, de 09:00 a 14:00, disfrutaremos de 5 días de entrenamiento organizados por 380 Academy y C.U.D. Ibi Ciudad del Juguete, pensados para que los jugadores lleguen preparados al inicio de la competición.',
+    items: '⚽ Técnica individual: conducción, pase, control, regate, finalización y golpeo.\n🧠 Táctica y toma de decisiones: lectura del juego, velocidad mental y situaciones reales de partido.\n💪 Preparación física: coordinación, agilidad, velocidad, fuerza y resistencia adaptadas a cada edad.\n🎯 Trabajo específico por posiciones y situaciones de juego.\n🏆 Mentalidad competitiva: esfuerzo, confianza, superación y hábitos deportivos.\n🤝 Compañerismo y valores, siempre disfrutando del fútbol.',
+    fechas: '📅 De lunes a viernes',
+    horario: '🕘 09:00 a 14:00',
+    precio: '💰 Precio: 60 €',
+    cierre: 'Una semana de fútbol, aprendizaje y diversión para preparar nuestra mejor versión antes de comenzar la temporada.',
+    pie: '🔥 380 ACADEMY × C.U.D. IBI CIUDAD DEL JUGUETE 🔥\n🏆 DESARROLLAMOS CAMPEONES',
+    inscripcionUrl: 'https://docs.google.com/forms/d/e/1FAIpQLSeJbgFIQRC9EH6d__xIthbw3YdRLgJtv8hd0BvJCgonN9GjlA/viewform',
+    imagen: 'https://i.postimg.cc/D0Jr4Zrg/image.png'
+  },
   forms: {
     escuelaInsc: 'https://docs.google.com/forms/d/e/1FAIpQLSdV4FCQmQikMH5ayyORuGxSv3m6Oz3_TERJroORv_u3VzYhCg/viewform',
     escuelaRopa: 'https://docs.google.com/forms/d/e/1FAIpQLSdSQo-NOPeY9vFquxXNcVu2__hG8CHO2Uyxr6uMZ5qWj1JQlg/viewform',
@@ -497,6 +564,18 @@ function loadConfigTab() {
   document.getElementById('preview-pack-escuela').src = (s.forms&&s.forms.packEscuelaImg)||'';
   document.getElementById('preview-pack-fed').src = (s.forms&&s.forms.packFedImg)||'';
   document.getElementById('input-loteria').checked = s.loteriaNavidad !== undefined ? !!s.loteriaNavidad : !!defaultConfig.loteriaNavidad;
+  var camp = (s.campus && typeof s.campus === 'object') ? s.campus : {};
+  document.getElementById('input-campus-activo').checked = camp.activo !== undefined ? !!camp.activo : !!defaultConfig.campus.activo;
+  document.getElementById('input-campus-titulo').value = camp.titulo !== undefined ? camp.titulo : defaultConfig.campus.titulo;
+  document.getElementById('input-campus-intro').value = camp.intro !== undefined ? camp.intro : defaultConfig.campus.intro;
+  document.getElementById('input-campus-items').value = camp.items !== undefined ? camp.items : defaultConfig.campus.items;
+  document.getElementById('input-campus-fechas').value = camp.fechas !== undefined ? camp.fechas : defaultConfig.campus.fechas;
+  document.getElementById('input-campus-horario').value = camp.horario !== undefined ? camp.horario : defaultConfig.campus.horario;
+  document.getElementById('input-campus-precio').value = camp.precio !== undefined ? camp.precio : defaultConfig.campus.precio;
+  document.getElementById('input-campus-cierre').value = camp.cierre !== undefined ? camp.cierre : defaultConfig.campus.cierre;
+  document.getElementById('input-campus-pie').value = camp.pie !== undefined ? camp.pie : defaultConfig.campus.pie;
+  document.getElementById('input-campus-url').value = camp.inscripcionUrl !== undefined ? camp.inscripcionUrl : defaultConfig.campus.inscripcionUrl;
+  document.getElementById('preview-campus').src = camp.imagen || defaultConfig.campus.imagen;
 }
 
 document.getElementById('input-logo').addEventListener('change', function(){
@@ -535,6 +614,40 @@ document.getElementById('input-loteria').addEventListener('change', function(){
   var checked = this.checked;
   db.ref('data/config/loteriaNavidad').set(checked).then(function(){
     toast(checked ? 'Lotería Navidad activada' : 'Lotería Navidad desactivada');
+  }).catch(function(err){ toast('Error: '+err.message); });
+});
+
+document.getElementById('input-campus-activo').addEventListener('change', function(){
+  var checked = this.checked;
+  db.ref('data/config/campus/activo').set(checked).then(function(){
+    toast(checked ? 'Campus Pretemporada activado' : 'Campus Pretemporada desactivado');
+  }).catch(function(err){ toast('Error: '+err.message); });
+});
+
+document.getElementById('input-campus-img').addEventListener('change', function(){
+  if(!this.files||!this.files[0])return;
+  var r=new FileReader();
+  r.onload=function(e){ db.ref('data/config/campus/imagen').set(e.target.result).then(function(){toast('Imagen del campus actualizada');}).catch(function(err){toast('Error: '+err.message);}); };
+  r.readAsDataURL(this.files[0]);
+});
+
+document.getElementById('btn-save-campus').addEventListener('click', function(){
+  var cur = (cachedConfig&&cachedConfig.campus)||{};
+  var campus = {
+    activo: document.getElementById('input-campus-activo').checked,
+    titulo: document.getElementById('input-campus-titulo').value,
+    intro: document.getElementById('input-campus-intro').value,
+    items: document.getElementById('input-campus-items').value,
+    fechas: document.getElementById('input-campus-fechas').value,
+    horario: document.getElementById('input-campus-horario').value,
+    precio: document.getElementById('input-campus-precio').value,
+    cierre: document.getElementById('input-campus-cierre').value,
+    pie: document.getElementById('input-campus-pie').value,
+    inscripcionUrl: document.getElementById('input-campus-url').value,
+    imagen: cur.imagen || defaultConfig.campus.imagen
+  };
+  db.ref('data/config/campus').set(campus).then(function(){
+    toast('Campus Pretemporada guardado');
   }).catch(function(err){ toast('Error: '+err.message); });
 });
 

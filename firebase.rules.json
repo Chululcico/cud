@@ -18,6 +18,21 @@
           "packEscuelaImg": { ".validate": "newData.isString() && newData.val().length <= 1000000" },
           "packFedImg": { ".validate": "newData.isString() && newData.val().length <= 1000000" }
         },
+        "campus": {
+          ".validate": "newData.hasChildren(['activo', 'titulo'])",
+          "activo": { ".validate": "newData.isBoolean()" },
+          "titulo": { ".validate": "newData.isString() && newData.val().length <= 300" },
+          "intro": { ".validate": "newData.isString() && newData.val().length <= 2000" },
+          "items": { ".validate": "newData.isString() && newData.val().length <= 3000" },
+          "fechas": { ".validate": "newData.isString() && newData.val().length <= 200" },
+          "horario": { ".validate": "newData.isString() && newData.val().length <= 200" },
+          "precio": { ".validate": "newData.isString() && newData.val().length <= 200" },
+          "cierre": { ".validate": "newData.isString() && newData.val().length <= 1000" },
+          "pie": { ".validate": "newData.isString() && newData.val().length <= 500" },
+          "inscripcionUrl": { ".validate": "newData.isString() && newData.val().length <= 500" },
+          "imagen": { ".validate": "newData.isString() && newData.val().length <= 1000000" },
+          "$other": { ".validate": false }
+        },
         "$other": { ".validate": false }
       },
       "gallery": {

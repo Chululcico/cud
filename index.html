@@ -12,6 +12,7 @@
 <link rel="preload" as="image" href="https://i.postimg.cc/QMZ4XbYK/escudo-sin-fondo.png" fetchpriority="high">
 <link rel="preload" as="image" href="https://files.catbox.moe/3t1fso.jpg">
 <link rel="preload" as="image" href="https://files.catbox.moe/pf2k2a.jpg">
+<link rel="preload" as="image" href="https://i.postimg.cc/D0Jr4Zrg/image.png">
 <style>
   :root{
     --black:#0a0a0c;
@@ -123,6 +124,21 @@
   .loteria-content p{font-size:15px;color:var(--grey);line-height:1.7;margin:0;}
   .loteria-content .btn{margin-top:12px;}
 
+  /* CAMPUS PRETEMPORADA */
+  .campus-card{display:grid;grid-template-columns:1.08fr 0.92fr;gap:28px;align-items:stretch;background:var(--black-soft);border:1px solid var(--grey-line);border-radius:4px;overflow:hidden;padding:24px;}
+  .campus-img{display:flex;align-items:center;justify-content:center;border-radius:10px;overflow:hidden;}
+  .campus-img img{width:100%;height:100%;object-fit:contain;display:block;}
+  .campus-content{display:flex;flex-direction:column;align-items:flex-start;gap:10px;}
+  .campus-content h2{font-family:'Oswald';font-size:clamp(20px,2.4vw,27px);line-height:1.15;margin-bottom:2px;}
+  .campus-content p{font-size:13.5px;color:var(--grey);line-height:1.65;margin:0;}
+  #campus-intro,#campus-pie{white-space:pre-line;}
+  .campus-list{list-style:none;display:flex;flex-direction:column;gap:6px;margin:0;padding:14px 16px;background:var(--black);border:1px solid var(--grey-line);border-left:3px solid var(--red);border-radius:4px;width:100%;}
+  .campus-list li{font-size:13px;color:#d8d7d3;line-height:1.5;}
+  .campus-info{display:flex;gap:10px;flex-wrap:wrap;font-family:'JetBrains Mono';font-size:11.5px;color:var(--white);}
+  .campus-info span{background:var(--black);border:1px solid var(--grey-line);border-radius:4px;padding:7px 10px;}
+  .campus-footer{font-family:'JetBrains Mono';font-size:11px;color:var(--red);letter-spacing:0.06em;text-transform:uppercase;line-height:1.7;}
+  .campus-content .btn{margin-top:4px;}
+
   /* GALERÍA */
   .gallery-upload{margin-top:36px;}
   .gallery-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;}
@@ -199,6 +215,8 @@
     .equip-showcase{grid-template-columns:1fr;}
     .pack-row{grid-template-columns:1fr;}
     .loteria-card{grid-template-columns:1fr;}
+    .campus-card{grid-template-columns:1fr;}
+    .campus-img{aspect-ratio:1180/998;}
     .gallery-grid{grid-template-columns:repeat(2,1fr);}
     .sponsor-grid{grid-template-columns:1fr 1fr;}
     form{padding:26px;}
@@ -259,6 +277,35 @@
           <img src="https://files.catbox.moe/7p1ndx.jpg" alt="Camiseta visitante" fetchpriority="high">
         </div>
         <h3 class="equip-label">VISITANTE</h3>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CAMPUS PRETEMPORADA -->
+<section id="campus-pretemporada">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="eyebrow">Campus Pretemporada</span>
+    </div>
+    <div class="campus-card">
+      <div class="campus-img">
+        <img src="https://i.postimg.cc/D0Jr4Zrg/image.png" alt="Campus Pretemporada" id="campus-imagen" decoding="async">
+      </div>
+      <div class="campus-content">
+        <h2 id="campus-titulo">Campus Pretemporada 380 Academy × C.U.D. Ibi Ciudad del Juguete</h2>
+        <p id="campus-intro">¡Arrancamos la temporada de la mejor manera! 💪⚽
+Del 31 de agosto al 4 de septiembre, de 09:00 a 14:00, disfrutaremos de 5 días de entrenamiento organizados por 380 Academy y C.U.D. Ibi Ciudad del Juguete, pensados para que los jugadores lleguen preparados al inicio de la competición.</p>
+        <ul class="campus-list" id="campus-lista"></ul>
+        <div class="campus-info">
+          <span id="campus-fechas">📅 De lunes a viernes</span>
+          <span id="campus-horario">🕘 09:00 a 14:00</span>
+          <span id="campus-precio">💰 Precio: 60 €</span>
+        </div>
+        <p id="campus-cierre">Una semana de fútbol, aprendizaje y diversión para preparar nuestra mejor versión antes de comenzar la temporada.</p>
+        <a href="https://docs.google.com/forms/d/e/1FAIpQLSeJbgFIQRC9EH6d__xIthbw3YdRLgJtv8hd0BvJCgonN9GjlA/viewform" target="_blank" rel="noopener" class="btn" id="link-campus-insc">Inscripción 📋 →</a>
+        <div class="campus-footer" id="campus-pie">🔥 380 ACADEMY × C.U.D. IBI CIUDAD DEL JUGUETE 🔥
+🏆 DESARROLLAMOS CAMPEONES</div>
       </div>
     </div>
   </div>
@@ -446,6 +493,19 @@ document.addEventListener('DOMContentLoaded', function(){
     equipacion: 'https://files.catbox.moe/3t1fso.jpg',
     title: 'CUD Ibi  Ciudad del Juguete',
     loteriaNavidad: true,
+    campus: {
+      activo: true,
+      titulo: 'Campus Pretemporada 380 Academy × C.U.D. Ibi Ciudad del Juguete',
+      intro: '¡Arrancamos la temporada de la mejor manera! 💪⚽\nDel 31 de agosto al 4 de septiembre, de 09:00 a 14:00, disfrutaremos de 5 días de entrenamiento organizados por 380 Academy y C.U.D. Ibi Ciudad del Juguete, pensados para que los jugadores lleguen preparados al inicio de la competición.',
+      items: '⚽ Técnica individual: conducción, pase, control, regate, finalización y golpeo.\n🧠 Táctica y toma de decisiones: lectura del juego, velocidad mental y situaciones reales de partido.\n💪 Preparación física: coordinación, agilidad, velocidad, fuerza y resistencia adaptadas a cada edad.\n🎯 Trabajo específico por posiciones y situaciones de juego.\n🏆 Mentalidad competitiva: esfuerzo, confianza, superación y hábitos deportivos.\n🤝 Compañerismo y valores, siempre disfrutando del fútbol.',
+      fechas: '📅 De lunes a viernes',
+      horario: '🕘 09:00 a 14:00',
+      precio: '💰 Precio: 60 €',
+      cierre: 'Una semana de fútbol, aprendizaje y diversión para preparar nuestra mejor versión antes de comenzar la temporada.',
+      pie: '🔥 380 ACADEMY × C.U.D. IBI CIUDAD DEL JUGUETE 🔥\n🏆 DESARROLLAMOS CAMPEONES',
+      inscripcionUrl: 'https://docs.google.com/forms/d/e/1FAIpQLSeJbgFIQRC9EH6d__xIthbw3YdRLgJtv8hd0BvJCgonN9GjlA/viewform',
+      imagen: 'https://i.postimg.cc/D0Jr4Zrg/image.png'
+    },
     forms: {
       escuelaInsc: 'https://docs.google.com/forms/d/e/1FAIpQLSdV4FCQmQikMH5ayyORuGxSv3m6Oz3_TERJroORv_u3VzYhCg/viewform',
       escuelaRopa: 'https://docs.google.com/forms/d/e/1FAIpQLSdSQo-NOPeY9vFquxXNcVu2__hG8CHO2Uyxr6uMZ5qWj1JQlg/viewform',
@@ -556,6 +616,28 @@ document.addEventListener('DOMContentLoaded', function(){
     if (heroTitle) heroTitle.textContent = s.title || defaults.title;
     var lot = document.getElementById('loteria-navidad');
     if (lot) lot.style.display = (s.loteriaNavidad !== undefined ? s.loteriaNavidad : defaults.loteriaNavidad) ? 'block' : 'none';
+    var campusSec = document.getElementById('campus-pretemporada');
+    if (campusSec) {
+      var c = s.campus || {};
+      var cd = defaults.campus;
+      function cv(key){ return (c[key] === undefined || c[key] === null) ? cd[key] : c[key]; }
+      campusSec.style.display = ((c.activo === undefined) ? cd.activo : !!c.activo) ? 'block' : 'none';
+      var cel;
+      cel = document.getElementById('campus-titulo'); if (cel) cel.textContent = cv('titulo');
+      cel = document.getElementById('campus-intro'); if (cel) cel.textContent = cv('intro');
+      var listEl = document.getElementById('campus-lista');
+      if (listEl) {
+        var lines = String(cv('items') || '').split('\n').map(function(l){ return l.trim(); }).filter(function(l){ return l.length > 0; });
+        listEl.innerHTML = lines.map(function(l){ return '<li>' + esc(l) + '</li>'; }).join('');
+      }
+      cel = document.getElementById('campus-fechas'); if (cel) cel.textContent = cv('fechas');
+      cel = document.getElementById('campus-horario'); if (cel) cel.textContent = cv('horario');
+      cel = document.getElementById('campus-precio'); if (cel) cel.textContent = cv('precio');
+      cel = document.getElementById('campus-cierre'); if (cel) cel.textContent = cv('cierre');
+      cel = document.getElementById('campus-pie'); if (cel) cel.textContent = cv('pie');
+      cel = document.getElementById('link-campus-insc'); if (cel) cel.href = cv('inscripcionUrl');
+      cel = document.getElementById('campus-imagen'); if (cel) cel.src = cv('imagen');
+    }
     if (s.forms) {
       var el;
       el = document.getElementById('link-escuela-insc'); if (el) el.href = s.forms.escuelaInsc || defaults.forms.escuelaInsc;
