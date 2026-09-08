@@ -619,7 +619,22 @@ document.getElementById('input-loteria').addEventListener('change', function(){
 
 document.getElementById('input-campus-activo').addEventListener('change', function(){
   var checked = this.checked;
-  db.ref('data/config/campus/activo').set(checked).then(function(){
+  var cur = (cachedConfig && cachedConfig.campus) || {};
+  var def = defaultConfig.campus;
+  var campus = {
+    activo: checked,
+    titulo: cur.titulo !== undefined ? cur.titulo : def.titulo,
+    intro: cur.intro !== undefined ? cur.intro : def.intro,
+    items: cur.items !== undefined ? cur.items : def.items,
+    fechas: cur.fechas !== undefined ? cur.fechas : def.fechas,
+    horario: cur.horario !== undefined ? cur.horario : def.horario,
+    precio: cur.precio !== undefined ? cur.precio : def.precio,
+    cierre: cur.cierre !== undefined ? cur.cierre : def.cierre,
+    pie: cur.pie !== undefined ? cur.pie : def.pie,
+    inscripcionUrl: cur.inscripcionUrl !== undefined ? cur.inscripcionUrl : def.inscripcionUrl,
+    imagen: cur.imagen || def.imagen
+  };
+  db.ref('data/config/campus').set(campus).then(function(){
     toast(checked ? 'Campus Pretemporada activado' : 'Campus Pretemporada desactivado');
   }).catch(function(err){ toast('Error: '+err.message); });
 });
@@ -724,22 +739,28 @@ function removeListeners() {
 }
 
 function renderFromCache() {
-  if (!db) {
-    if (typeof FALLBACK_GALLERY !== 'undefined') {
-      var fb = {};
-      FALLBACK_GALLERY.forEach(function(item, i){ fb['fallback_' + i] = item; });
-      cacheSet('cud_gallery_fb', fb);
-    }
-    if (typeof FALLBACK_SPONSORS !== 'undefined') {
-      var fb2 = {};
-      FALLBACK_SPONSORS.forEach(function(item, i){ fb2['fallback_' + i] = item; });
-      cacheSet('cud_sponsors_fb', fb2);
-    }
-  }
   cachedPending = cacheGet('cud_pending_fb', {});
   cachedGallery = cacheGet('cud_gallery_fb', {});
   cachedSponsors = cacheGet('cud_sponsors_fb', {});
   cachedConfig = cacheGet('cud_config_fb', {});
+
+  if (!db) {
+    var hasGallery = cachedGallery && Object.keys(cachedGallery).length;
+    if (!hasGallery && typeof FALLBACK_GALLERY !== 'undefined') {
+      var fb = {};
+      FALLBACK_GALLERY.forEach(function(item, i){ fb['fallback_' + i] = item; });
+      cachedGallery = fb;
+      cacheSet('cud_gallery_fb', fb);
+    }
+    var hasSponsors = cachedSponsors && Object.keys(cachedSponsors).length;
+    if (!hasSponsors && typeof FALLBACK_SPONSORS !== 'undefined') {
+      var fb2 = {};
+      FALLBACK_SPONSORS.forEach(function(item, i){ fb2['fallback_' + i] = item; });
+      cachedSponsors = fb2;
+      cacheSet('cud_sponsors_fb', fb2);
+    }
+  }
+
   renderPending();
   renderGallery();
   renderSponsors();
@@ -857,8 +878,6 @@ function currentGalleryData() {
   var out = {};
   if (cachedGallery && Object.keys(cachedGallery).length) {
     Object.keys(cachedGallery).forEach(function(k){ var kk=pushId(); out[kk]={ src: cachedGallery[k].src||'', timestamp: cachedGallery[k].timestamp||Date.now() }; });
-  } else if (typeof FALLBACK_GALLERY !== 'undefined') {
-    FALLBACK_GALLERY.forEach(function(item){ var k=pushId(); out[k]={ src: item.src||'', timestamp: item.timestamp||Date.now() }; });
   }
   return out;
 }

@@ -19,7 +19,6 @@
           "packFedImg": { ".validate": "newData.isString() && newData.val().length <= 1000000" }
         },
         "campus": {
-          ".validate": "newData.hasChildren(['activo', 'titulo'])",
           "activo": { ".validate": "newData.isBoolean()" },
           "titulo": { ".validate": "newData.isString() && newData.val().length <= 300" },
           "intro": { ".validate": "newData.isString() && newData.val().length <= 2000" },
@@ -30,7 +29,7 @@
           "cierre": { ".validate": "newData.isString() && newData.val().length <= 1000" },
           "pie": { ".validate": "newData.isString() && newData.val().length <= 500" },
           "inscripcionUrl": { ".validate": "newData.isString() && newData.val().length <= 500" },
-          "imagen": { ".validate": "newData.isString() && newData.val().length <= 1000000" },
+          "imagen": { ".validate": "newData.isString() && newData.val().length <= 10000000" },
           "$other": { ".validate": false }
         },
         "$other": { ".validate": false }
@@ -39,7 +38,7 @@
         ".write": "auth.uid !== null",
         "$key": {
           ".validate": "newData.hasChildren(['src', 'timestamp'])",
-          "src": { ".validate": "newData.isString() && newData.val().length <= 1000000" },
+          "src": { ".validate": "newData.isString() && newData.val().length <= 10000000" },
           "timestamp": { ".validate": "newData.isNumber()" },
           "$other": { ".validate": false }
         }
@@ -63,7 +62,7 @@
         ".write": true,
         "$key": {
           ".validate": "newData.hasChildren(['src', 'autor', 'fecha', 'timestamp'])",
-          "src": { ".validate": "newData.isString() && newData.val().length <= 1000000" },
+          "src": { ".validate": "newData.isString() && newData.val().length <= 10000000" },
           "titulo": { ".validate": "newData.isString() && newData.val().length <= 100" },
           "autor": { ".validate": "newData.isString() && newData.val().length <= 100" },
           "fecha": { ".validate": "newData.isString() && newData.val().length <= 50" },
@@ -77,7 +76,7 @@
         ".write": "auth.uid !== null",
         "$key": {
           ".validate": "newData.hasChildren(['src', 'autor', 'fecha', 'timestamp'])",
-          "src": { ".validate": "newData.isString() && newData.val().length <= 1000000" },
+          "src": { ".validate": "newData.isString() && newData.val().length <= 10000000" },
           "titulo": { ".validate": "newData.isString() && newData.val().length <= 100" },
           "autor": { ".validate": "newData.isString() && newData.val().length <= 100" },
           "fecha": { ".validate": "newData.isString() && newData.val().length <= 50" },
@@ -90,7 +89,7 @@
         ".write": "auth.uid !== null",
         "$key": {
           ".validate": "newData.hasChildren(['src', 'autor', 'fecha', 'timestamp'])",
-          "src": { ".validate": "newData.isString() && newData.val().length <= 1000000" },
+          "src": { ".validate": "newData.isString() && newData.val().length <= 10000000" },
           "titulo": { ".validate": "newData.isString() && newData.val().length <= 100" },
           "autor": { ".validate": "newData.isString() && newData.val().length <= 100" },
           "fecha": { ".validate": "newData.isString() && newData.val().length <= 50" },
