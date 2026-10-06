@@ -45,6 +45,24 @@
   .admin-header h2{font-size:18px;}
   .admin-header .logout{font-family:'JetBrains Mono';font-size:12px;color:var(--grey);cursor:pointer;border:none;background:none;padding:8px 12px;transition:color .2s;}
   .admin-header .logout:hover{color:var(--red);}
+  .btn-apply{
+    position:relative;background:var(--red);color:var(--white);border:none;
+    padding:10px 20px;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;
+    border-radius:2px;cursor:pointer;font-family:'Inter';display:inline-flex;align-items:center;gap:8px;
+    transition:background .2s,opacity .2s;
+  }
+  .btn-apply:hover{background:var(--red-deep);}
+  .btn-apply:disabled{background:var(--grey-line);color:var(--grey);cursor:default;}
+  .pending-count{
+    background:var(--white);color:var(--red);border-radius:10px;
+    min-width:18px;height:18px;padding:0 5px;font-size:10px;font-weight:700;
+    display:inline-flex;align-items:center;justify-content:center;
+  }
+  .pending-badge{
+    position:absolute;top:6px;left:6px;z-index:2;background:var(--red);color:var(--white);
+    font-family:'JetBrains Mono';font-size:9px;font-weight:700;text-transform:uppercase;
+    padding:3px 7px;border-radius:3px;letter-spacing:0.05em;
+  }
   .admin-body{max-width:1180px;margin:0 auto;padding:32px 28px;}
   .tabs{display:flex;gap:0;border-bottom:1px solid var(--grey-line);margin-bottom:32px;overflow-x:auto;}
   .tabs button{background:none;border:none;padding:12px 20px;font-family:'Inter';font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.04em;color:var(--grey);cursor:pointer;border-bottom:2px solid transparent;transition:all .2s;white-space:nowrap;}
@@ -136,9 +154,14 @@
 
 <div id="admin-panel">
   <header class="admin-header">
-    <div class="admin-header-inner">
+<div class="admin-header-inner">
       <h2>Panel de gestión</h2>
-      <button class="logout" id="logout-btn">Cerrar sesión</button>
+      <div style="display:flex;align-items:center;gap:12px;">
+        <button class="btn-apply" id="btn-apply-changes">
+          Aplicar cambios<span class="pending-count" id="pending-count" style="display:none;">0</span>
+        </button>
+        <button class="logout" id="logout-btn">Cerrar sesión</button>
+      </div>
     </div>
   </header>
 
@@ -159,12 +182,12 @@
         <div class="pending-grid" id="pending-grid"></div>
       </div>
       <div style="margin-bottom:16px;"><h4>Fotos publicadas</h4></div>
-      <div class="form-row">
+<div class="form-row">
         <div class="field">
-          <label>Archivo (JPG/PNG)</label>
-          <input type="file" id="admin-foto-archivo" accept="image/*">
+          <label>Imágenes (JPG/PNG — puedes elegir varias)</label>
+          <input type="file" id="admin-foto-archivo" accept="image/*" multiple>
         </div>
-        <button class="btn-sm" id="admin-add-foto">Añadir foto</button>
+        <p style="font-size:12px;color:var(--grey);align-self:center;margin:0;">Se optimizan automáticamente antes de subirlas.</p>
       </div>
       <div class="gallery-admin-grid" id="admin-gallery-grid"></div>
     </div>
@@ -258,7 +281,6 @@
           <div style="margin-bottom:8px;"><img id="preview-pack-fed" style="max-width:180px;max-height:180px;border-radius:4px;object-fit:contain;" alt="Pack Federados"></div>
           <input type="file" id="input-pack-fed" accept="image/*">
         </div>
-        <button class="btn-sm" id="btn-save-forms">Guardar formularios</button>
       </div>
 
       <div class="settings-section">
@@ -312,7 +334,6 @@
           <div style="margin-bottom:8px;"><img id="preview-campus" style="max-width:180px;max-height:180px;border-radius:4px;object-fit:contain;" alt="Campus"></div>
           <input type="file" id="input-campus-img" accept="image/*">
         </div>
-        <button class="btn-sm" id="btn-save-campus">Guardar campus</button>
       </div>
 
       <div class="settings-section">
@@ -392,6 +413,49 @@ function esc(s) { var d = document.createElement('div'); d.textContent = s; retu
 function escAttr(s) { return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 function escapeHTML(str) { return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
+// ---- COMPRESOR DE IMÁGENES ----
+// Reduce la imagen en el navegador antes de guardarla como base64 en Firebase.
+// Sin esto, una foto de móvil de 5 MB se convierte en ~6,7 MB de base64 y
+// Firebase la rechaza silenciosamente por superar el límite de las reglas.
+var IMG_MAX_DIM = 1600;
+var IMG_QUALITY = 0.82;
+function compressImage(file, maxDim, quality, cb){
+  maxDim = maxDim || IMG_MAX_DIM;
+  quality = quality || IMG_QUALITY;
+  if(!file){ cb(null); return; }
+  if(!/^image\//.test(file.type)){ cb(null); return; }
+  var reader = new FileReader();
+  reader.onerror = function(){ cb(null); };
+  reader.onload = function(e){
+    var dataUrl = e.target.result;
+    var img = new Image();
+    img.onerror = function(){ cb(dataUrl); };
+    img.onload = function(){
+      try {
+        var w = img.naturalWidth, h = img.naturalHeight;
+        if(!w || !h){ cb(dataUrl); return; }
+        var scale = Math.min(1, maxDim / Math.max(w, h));
+        var cw = Math.max(1, Math.round(w * scale));
+        var ch = Math.max(1, Math.round(h * scale));
+        var canvas = document.createElement('canvas');
+        canvas.width = cw; canvas.height = ch;
+        var ctx = canvas.getContext('2d');
+        ctx.fillStyle = '#0a0a0c';
+        ctx.fillRect(0, 0, cw, ch);
+        ctx.drawImage(img, 0, 0, cw, ch);
+        var out;
+        try { out = canvas.toDataURL('image/jpeg', quality); }
+        catch(err2) { out = dataUrl; }
+        // Si la compresión no ha servido (PNG sin ganancia), usar el original
+        if(!out || out.length > dataUrl.length) out = dataUrl;
+        cb(out);
+      } catch(err) { cb(dataUrl); }
+    };
+    img.src = dataUrl;
+  };
+  reader.readAsDataURL(file);
+}
+
 var CACHE_VER = 3;
 function cacheSet(key, val) { try { localStorage.setItem(key + '_v' + CACHE_VER, JSON.stringify(val)); } catch(e){} }
 function cacheGet(key, def) { try { var r = localStorage.getItem(key + '_v' + CACHE_VER); return r ? JSON.parse(r) : def; } catch(e) { return def; } }
@@ -433,6 +497,140 @@ var cachedGallery = {};
 var cachedSponsors = {};
 var cachedPending = {};
 var cachedConfig = {};
+
+// ---- ESTADO PENDIENTE (se aplica con "Aplicar cambios") ----
+var stagedGalleryAdd = [];
+var stagedGalleryDel = [];
+var stagedSponsorAdd = [];
+var stagedSponsorDel = [];
+var stagedImages = {};
+var configDirty = false;
+var gallerySeeded = false;
+var sponsorsSeeded = false;
+
+function pendingCount(){
+  return stagedGalleryAdd.length + stagedGalleryDel.length +
+         stagedSponsorAdd.length + stagedSponsorDel.length +
+         Object.keys(stagedImages).length + (configDirty ? 1 : 0);
+}
+
+function updatePendingBadge(){
+  var n = pendingCount();
+  var badge = document.getElementById('pending-count');
+  var btn = document.getElementById('btn-apply-changes');
+  if (badge) {
+    badge.textContent = n;
+    badge.style.display = n > 0 ? 'inline-flex' : 'none';
+  }
+  if (btn) btn.disabled = (n === 0);
+}
+
+function clearStaged(){
+  stagedGalleryAdd = [];
+  stagedGalleryDel = [];
+  stagedSponsorAdd = [];
+  stagedSponsorDel = [];
+  stagedImages = {};
+  configDirty = false;
+  updatePendingBadge();
+}
+
+// ---- APLICAR CAMBIOS (una sola escritura a Firebase) ----
+function collectConfigUpdate(){
+  var s = (cachedConfig && typeof cachedConfig === 'object') ? cachedConfig : {};
+  var forms = s.forms || {};
+  var camp = (s.campus && typeof s.campus === 'object') ? s.campus : {};
+  var def = defaultConfig;
+  var defCamp = def.campus;
+
+  var config = {
+    logo: stagedImages.logo || s.logo || def.logo,
+    equipacion: stagedImages.equipacion || s.equipacion || def.equipacion,
+    title: document.getElementById('input-title').value,
+    loteriaNavidad: document.getElementById('input-loteria').checked,
+    forms: {
+      escuelaInsc: document.getElementById('input-form-escuela-insc').value || def.forms.escuelaInsc,
+      escuelaRopa: document.getElementById('input-form-escuela-ropa').value || def.forms.escuelaRopa,
+      fedInsc: document.getElementById('input-form-fed-insc').value || def.forms.fedInsc,
+      fedRopa: document.getElementById('input-form-fed-ropa').value || def.forms.fedRopa,
+      packEscuelaImg: stagedImages.packEscuelaImg || forms.packEscuelaImg || def.forms.packEscuelaImg,
+      packFedImg: stagedImages.packFedImg || forms.packFedImg || def.forms.packFedImg
+    },
+    campus: {
+      activo: document.getElementById('input-campus-activo').checked,
+      titulo: document.getElementById('input-campus-titulo').value || defCamp.titulo,
+      intro: document.getElementById('input-campus-intro').value || defCamp.intro,
+      items: document.getElementById('input-campus-items').value || defCamp.items,
+      fechas: document.getElementById('input-campus-fechas').value || defCamp.fechas,
+      horario: document.getElementById('input-campus-horario').value || defCamp.horario,
+      precio: document.getElementById('input-campus-precio').value || defCamp.precio,
+      cierre: document.getElementById('input-campus-cierre').value || defCamp.cierre,
+      pie: document.getElementById('input-campus-pie').value || defCamp.pie,
+      inscripcionUrl: document.getElementById('input-campus-url').value || defCamp.inscripcionUrl,
+      imagen: stagedImages.campusImagen || camp.imagen || defCamp.imagen
+    }
+  };
+  return config;
+}
+
+document.getElementById('btn-apply-changes').addEventListener('click', function(){
+  var btn = this;
+  var n = pendingCount();
+  if (n === 0) { toast('No hay cambios pendientes'); return; }
+  if (!db) { toast('Firebase no disponible — no se pueden aplicar cambios'); return; }
+
+  btn.disabled = true;
+  btn.textContent = 'Aplicando…';
+
+  var updates = {};
+  var summary = [];
+
+  // Galería: altas y bajas
+  if (stagedGalleryDel.length) {
+    stagedGalleryDel.forEach(function(k){ updates['data/gallery/' + k] = null; });
+    summary.push(stagedGalleryDel.length + ' foto(s) eliminada(s)');
+  }
+  if (stagedGalleryAdd.length) {
+    stagedGalleryAdd.forEach(function(it){
+      updates['data/gallery/' + pushId()] = { src: it.src, timestamp: it.timestamp || Date.now() };
+    });
+    summary.push(stagedGalleryAdd.length + ' foto(s) añadida(s)');
+  }
+
+  // Patrocinadores: altas y bajas
+  if (stagedSponsorDel.length) {
+    stagedSponsorDel.forEach(function(k){ updates['data/sponsors/' + k] = null; });
+    summary.push(stagedSponsorDel.length + ' patrocinador(es) eliminado');
+  }
+  if (stagedSponsorAdd.length) {
+    stagedSponsorAdd.forEach(function(sp){
+      updates['data/sponsors/' + pushId()] = { name: sp.name||'', tier: sp.tier||'', img: sp.img||'', url: sp.url||'' };
+    });
+    summary.push(stagedSponsorAdd.length + ' patrocinador(es) añadidos');
+  }
+
+  // Configuración (incluye imágenes de logo, equipación, packs y campus)
+  updates['data/config'] = collectConfigUpdate();
+  summary.push('configuración');
+
+  db.ref().update(updates).then(function(){
+    clearStaged();
+    btn.textContent = 'Aplicar cambios';
+    updatePendingBadge();
+    renderGallery();
+    renderSponsors();
+    toast('✓ Aplicado: ' + summary.join(', '));
+  }).catch(function(err){
+    btn.textContent = 'Aplicar cambios';
+    updatePendingBadge();
+    var msg = err && err.message ? err.message : String(err);
+    if (msg.indexOf('PERMISSION_DENIED') !== -1 || msg.indexOf('permission_denied') !== -1) {
+      toast('Permiso denegado — publicaste las reglas nuevas en Firebase Console');
+    } else {
+      toast('Error: ' + msg);
+    }
+  });
+});
 
 var listenersActive = false;
 
@@ -487,49 +685,124 @@ function renderPending() {
   });
 }
 
-// ---- GALLERY ----
+// ---- GALLERY (staging: se aplica con "Aplicar cambios") ----
 function renderGallery() {
   var grid = document.getElementById('admin-gallery-grid');
-  var keys = Object.keys(cachedGallery);
-  if (keys.length === 0) { grid.innerHTML = '<div class="empty-state">No hay fotos en la galería</div>'; return; }
-  grid.innerHTML = keys.map(function(key){
-    var item = cachedGallery[key];
-    return '<div class="gallery-admin-item"><img src="' + escAttr(item.src) + '" alt=""><div class="del-overlay"><button class="btn-danger" data-gal-del="' + escAttr(key) + '">Eliminar</button></div></div>';
+  if (!grid) return;
+
+  var items = [];
+  var delKeys = {};
+  stagedGalleryDel.forEach(function(k){ delKeys[k] = true; });
+
+  Object.keys(cachedGallery).forEach(function(key){
+    if (delKeys[key]) return;
+    items.push({ kind: 'saved', key: key, src: cachedGallery[key].src || '' });
+  });
+  stagedGalleryAdd.forEach(function(it, i){
+    items.push({ kind: 'new', key: 'new_' + i, src: it.src });
+  });
+
+  if (items.length === 0) { grid.innerHTML = '<div class="empty-state">No hay fotos en la galería</div>'; return; }
+
+  grid.innerHTML = items.map(function(it){
+    var badge = it.kind === 'new' ? '<span class="pending-badge">Nueva</span>' : '';
+    var btn = it.kind === 'new'
+      ? '<button class="btn-danger" data-gal-unstage="' + escAttr(it.key)">Quitar</button>'
+      : '<button class="btn-danger" data-gal-del="' + escAttr(it.key) + '">Eliminar</button>';
+    return '<div class="gallery-admin-item">' + badge +
+      '<img src="' + escAttr(it.src) + '" alt="">' +
+      '<div class="del-overlay">' + btn + '</div></div>';
   }).join('');
+
   grid.querySelectorAll('[data-gal-del]').forEach(function(btn){
     btn.addEventListener('click', function(){
-      db.ref('data/gallery/' + this.dataset.galDel).remove().then(function(){ toast('Foto eliminada'); }).catch(function(err){ toast('Error: '+err.message); });
+      var key = this.dataset.galDel;
+      if (delKeys[key]) return;
+      stagedGalleryDel.push(key);
+      updatePendingBadge();
+      renderGallery();
+      toast('Foto marcada para eliminar — pulsa "Aplicar cambios"');
+    });
+  });
+  grid.querySelectorAll('[data-gal-unstage]').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var i = parseInt(this.dataset.galUnstage.replace('new_', ''), 10);
+      if (!isNaN(i)) stagedGalleryAdd.splice(i, 1);
+      updatePendingBadge();
+      renderGallery();
     });
   });
 }
 
-document.getElementById('admin-add-foto').addEventListener('click', function(){
-  var input = document.getElementById('admin-foto-archivo');
-  if (!input.files||!input.files[0]) { toast('Selecciona un archivo'); return; }
-  var reader = new FileReader();
-  reader.onload = function(e){
-    db.ref('data/gallery').push({ src: e.target.result, timestamp: Date.now() }).then(function(){ toast('Foto añadida'); input.value=''; }).catch(function(err){ toast('Error: '+err.message); });
-  };
-  reader.readAsDataURL(input.files[0]);
+document.getElementById('admin-foto-archivo').addEventListener('change', function(){
+  var files = this.files;
+  if (!files || !files.length) return;
+  var total = files.length;
+  var done = 0;
+  toast('Procesando ' + total + ' imagen(es)…');
+  Array.prototype.slice.call(files).forEach(function(file, idx){
+    compressImage(file, 1600, 0.82, function(dataUrl){
+      if (dataUrl) stagedGalleryAdd.push({ src: dataUrl, timestamp: Date.now() });
+      done++;
+      if (done === total) {
+        this.value = '';
+        updatePendingBadge();
+        renderGallery();
+        toast(stagedGalleryAdd.length + ' imagen(es) lista(s) — pulsa "Aplicar cambios"');
+      }
+    }.bind(this));
+  });
 });
 
-// ---- SPONSORS ----
+// ---- SPONSORS (staging) ----
 function renderSponsors() {
   var list = document.getElementById('admin-sponsor-list');
-  var keys = Object.keys(cachedSponsors);
-  if (keys.length === 0) { list.innerHTML = '<div class="empty-state">No hay patrocinadores</div>'; return; }
-  list.innerHTML = keys.map(function(key, i){
-    var sp = cachedSponsors[key];
+  if (!list) return;
+
+  var items = [];
+  var delKeys = {};
+  stagedSponsorDel.forEach(function(k){ delKeys[k] = true; });
+
+  Object.keys(cachedSponsors).forEach(function(key){
+    if (delKeys[key]) return;
+    items.push({ kind: 'saved', key: key, sp: cachedSponsors[key] });
+  });
+  stagedSponsorAdd.forEach(function(sp, i){
+    items.push({ kind: 'new', key: 'new_' + i, sp: sp });
+  });
+
+  if (items.length === 0) { list.innerHTML = '<div class="empty-state">No hay patrocinadores</div>'; return; }
+
+  list.innerHTML = items.map(function(it, i){
+    var sp = it.sp;
     var imgHtml = sp.img ? '<div class="sp-img-box"><img src="'+escAttr(sp.img)+'" alt=""></div>' : '<div class="sp-img-box" style="background:var(--black-card);"><span style="color:var(--grey);font-size:10px;">Sin img</span></div>';
     var tierHtml = sp.tier ? '<span class="tier">'+esc(sp.tier)+'</span>' : '';
     var urlHtml = sp.url ? '<div class="url">'+esc(sp.url)+'</div>' : '';
-    return '<div class="sponsor-admin-item"><span class="sp-index">'+(i+1)+'</span>'+imgHtml+
-      '<div class="sp-info"><div class="name">'+esc(sp.name)+'</div>'+tierHtml+urlHtml+'</div>'+
-      '<div class="actions"><button class="btn-danger" data-sp-del="'+escAttr(key)+'">Eliminar</button></div></div>';
+    var badge = it.kind === 'new' ? '<span class="pending-badge">Nuevo</span>' : '';
+    var btn = it.kind === 'new'
+      ? '<button class="btn-danger" data-sp-unstage="' + escAttr(it.key) + '">Quitar</button>'
+      : '<button class="btn-danger" data-sp-del="' + escAttr(it.key) + '">Eliminar</button>';
+    return '<div class="sponsor-admin-item"><span class="sp-index">'+(i+1)+'</span>'+badge+imgHtml+
+      '<div class="sp-info"><div class="name">'+esc(sp.name||'')+'</div>'+tierHtml+urlHtml+'</div>'+
+      '<div class="actions">'+btn+'</div></div>';
   }).join('');
+
   list.querySelectorAll('[data-sp-del]').forEach(function(btn){
     btn.addEventListener('click', function(){
-      db.ref('data/sponsors/'+this.dataset.spDel).remove().then(function(){ toast('Patrocinador eliminado'); }).catch(function(err){ toast('Error: '+err.message); });
+      var key = this.dataset.spDel;
+      if (delKeys[key]) return;
+      stagedSponsorDel.push(key);
+      updatePendingBadge();
+      renderSponsors();
+      toast('Patrocinador marcado para eliminar — pulsa "Aplicar cambios"');
+    });
+  });
+  list.querySelectorAll('[data-sp-unstage]').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var i = parseInt(this.dataset.spUnstage.replace('new_', ''), 10);
+      if (!isNaN(i)) stagedSponsorAdd.splice(i, 1);
+      updatePendingBadge();
+      renderSponsors();
     });
   });
 }
@@ -540,19 +813,28 @@ document.getElementById('admin-add-sponsor').addEventListener('click', function(
   var url = document.getElementById('sp-url').value.trim();
   var fileInput = document.getElementById('sp-img-file');
   if (!name) { toast('El nombre es obligatorio'); return; }
-  function addSponsor(imgSrc){
-    db.ref('data/sponsors').push({ name: name, tier: tier, img: imgSrc||'', url: url }).then(function(){
-      document.getElementById('sp-name').value=''; document.getElementById('sp-tier').value='';
-      document.getElementById('sp-url').value=''; document.getElementById('sp-img-file').value='';
-      toast('Patrocinador añadido');
-    }).catch(function(err){ toast('Error: '+err.message); });
+
+  function stage(imgSrc){
+    stagedSponsorAdd.push({ name: name, tier: tier, img: imgSrc || '', url: url });
+    document.getElementById('sp-name').value = '';
+    document.getElementById('sp-tier').value = '';
+    document.getElementById('sp-url').value = '';
+    document.getElementById('sp-img-file').value = '';
+    updatePendingBadge();
+    renderSponsors();
+    toast('Patrocinador añadido — pulsa "Aplicar cambios"');
   }
-  if (fileInput.files&&fileInput.files[0]) { var r=new FileReader(); r.onload=function(e){addSponsor(e.target.result);}; r.readAsDataURL(fileInput.files[0]); }
-  else { addSponsor(''); }
+
+  if (fileInput.files && fileInput.files[0]) {
+    toast('Procesando imagen…');
+    compressImage(fileInput.files[0], 1200, 0.85, function(dataUrl){ stage(dataUrl); });
+  } else { stage(''); }
 });
 
 // ---- CONFIG ----
 function loadConfigTab() {
+  // No sobrescribir el formulario mientras el usuario tenga cambios sin aplicar
+  if (configDirty || pendingCount() > 0) return;
   var s = cachedConfig&&cachedConfig.logo ? cachedConfig : defaultConfig;
   document.getElementById('preview-logo').src = s.logo||'';
   document.getElementById('preview-equip').src = s.equipacion||'';
@@ -578,105 +860,43 @@ function loadConfigTab() {
   document.getElementById('preview-campus').src = camp.imagen || defaultConfig.campus.imagen;
 }
 
-document.getElementById('input-logo').addEventListener('change', function(){
-  if(!this.files||!this.files[0])return;
-  var r=new FileReader();
-  r.onload=function(e){ db.ref('data/config/logo').set(e.target.result).then(function(){toast('Logo actualizado');}).catch(function(err){toast('Error: '+err.message);}); };
-  r.readAsDataURL(this.files[0]);
-});
+// ---- STAGING DE CONFIGURACIÓN ----
+// Las imágenes se compressan y se guardan en memoria; el texto se marca como pendiente.
+// Nada se escribe en Firebase hasta pulsar "Aplicar cambios".
+function stageImage(inputId, previewId, targetKey, label){
+  var input = document.getElementById(inputId);
+  if (!input.files || !input.files[0]) return;
+  var prev = previewId ? document.getElementById(previewId) : null;
+  toast('Procesando ' + label + '…');
+  compressImage(input.files[0], targetKey === 'logo' ? 600 : 1400, 0.85, function(dataUrl){
+    if (!dataUrl) { toast('No se pudo leer la imagen'); return; }
+    stagedImages[targetKey] = dataUrl;
+    if (prev) prev.src = dataUrl;
+    input.value = '';
+    markConfigDirty(label + ' actualizado');
+  });
+}
 
-document.getElementById('input-equip').addEventListener('change', function(){
-  if(!this.files||!this.files[0])return;
-  var r=new FileReader();
-  r.onload=function(e){ db.ref('data/config/equipacion').set(e.target.result).then(function(){toast('Imagen de equipación actualizada');}).catch(function(err){toast('Error: '+err.message);}); };
-  r.readAsDataURL(this.files[0]);
-});
+function markConfigDirty(msg){
+  configDirty = true;
+  updatePendingBadge();
+  toast((msg || 'Cambios pendientes') + ' — pulsa "Aplicar cambios"');
+}
 
-document.getElementById('input-pack-escuela').addEventListener('change', function(){
-  if(!this.files||!this.files[0])return;
-  var r=new FileReader();
-  r.onload=function(e){ db.ref('data/config/forms/packEscuelaImg').set(e.target.result).then(function(){toast('Imagen pack Escuela actualizada');}).catch(function(err){toast('Error: '+err.message);}); };
-  r.readAsDataURL(this.files[0]);
-});
+document.getElementById('input-logo').addEventListener('change', function(){ stageImage('input-logo', 'preview-logo', 'logo', 'Logo'); });
+document.getElementById('input-equip').addEventListener('change', function(){ stageImage('input-equip', 'preview-equip', 'equipacion', 'Equipación'); });
+document.getElementById('input-pack-escuela').addEventListener('change', function(){ stageImage('input-pack-escuela', 'preview-pack-escuela', 'packEscuelaImg', 'Pack Escuela'); });
+document.getElementById('input-pack-fed').addEventListener('change', function(){ stageImage('input-pack-fed', 'preview-pack-fed', 'packFedImg', 'Pack Federados'); });
+document.getElementById('input-campus-img').addEventListener('change', function(){ stageImage('input-campus-img', 'preview-campus', 'campusImagen', 'Imagen del campus'); });
 
-document.getElementById('input-pack-fed').addEventListener('change', function(){
-  if(!this.files||!this.files[0])return;
-  var r=new FileReader();
-  r.onload=function(e){ db.ref('data/config/forms/packFedImg').set(e.target.result).then(function(){toast('Imagen pack Federados actualizada');}).catch(function(err){toast('Error: '+err.message);}); };
-  r.readAsDataURL(this.files[0]);
-});
-
-document.getElementById('input-title').addEventListener('change', function(){
-  db.ref('data/config/title').set(this.value).catch(function(err){ toast('Error: '+err.message); });
-});
-
-document.getElementById('input-loteria').addEventListener('change', function(){
-  var checked = this.checked;
-  db.ref('data/config/loteriaNavidad').set(checked).then(function(){
-    toast(checked ? 'Lotería Navidad activada' : 'Lotería Navidad desactivada');
-  }).catch(function(err){ toast('Error: '+err.message); });
-});
-
-document.getElementById('input-campus-activo').addEventListener('change', function(){
-  var checked = this.checked;
-  var cur = (cachedConfig && cachedConfig.campus) || {};
-  var def = defaultConfig.campus;
-  var campus = {
-    activo: checked,
-    titulo: cur.titulo !== undefined ? cur.titulo : def.titulo,
-    intro: cur.intro !== undefined ? cur.intro : def.intro,
-    items: cur.items !== undefined ? cur.items : def.items,
-    fechas: cur.fechas !== undefined ? cur.fechas : def.fechas,
-    horario: cur.horario !== undefined ? cur.horario : def.horario,
-    precio: cur.precio !== undefined ? cur.precio : def.precio,
-    cierre: cur.cierre !== undefined ? cur.cierre : def.cierre,
-    pie: cur.pie !== undefined ? cur.pie : def.pie,
-    inscripcionUrl: cur.inscripcionUrl !== undefined ? cur.inscripcionUrl : def.inscripcionUrl,
-    imagen: cur.imagen || def.imagen
-  };
-  db.ref('data/config/campus').set(campus).then(function(){
-    toast(checked ? 'Campus Pretemporada activado' : 'Campus Pretemporada desactivado');
-  }).catch(function(err){ toast('Error: '+err.message); });
-});
-
-document.getElementById('input-campus-img').addEventListener('change', function(){
-  if(!this.files||!this.files[0])return;
-  var r=new FileReader();
-  r.onload=function(e){ db.ref('data/config/campus/imagen').set(e.target.result).then(function(){toast('Imagen del campus actualizada');}).catch(function(err){toast('Error: '+err.message);}); };
-  r.readAsDataURL(this.files[0]);
-});
-
-document.getElementById('btn-save-campus').addEventListener('click', function(){
-  var cur = (cachedConfig&&cachedConfig.campus)||{};
-  var campus = {
-    activo: document.getElementById('input-campus-activo').checked,
-    titulo: document.getElementById('input-campus-titulo').value,
-    intro: document.getElementById('input-campus-intro').value,
-    items: document.getElementById('input-campus-items').value,
-    fechas: document.getElementById('input-campus-fechas').value,
-    horario: document.getElementById('input-campus-horario').value,
-    precio: document.getElementById('input-campus-precio').value,
-    cierre: document.getElementById('input-campus-cierre').value,
-    pie: document.getElementById('input-campus-pie').value,
-    inscripcionUrl: document.getElementById('input-campus-url').value,
-    imagen: cur.imagen || defaultConfig.campus.imagen
-  };
-  db.ref('data/config/campus').set(campus).then(function(){
-    toast('Campus Pretemporada guardado');
-  }).catch(function(err){ toast('Error: '+err.message); });
-});
-
-document.getElementById('btn-save-forms').addEventListener('click', function(){
-  var cur = (cachedConfig&&cachedConfig.forms)||defaultConfig.forms||{};
-  var forms = {
-    escuelaInsc: document.getElementById('input-form-escuela-insc').value,
-    escuelaRopa: document.getElementById('input-form-escuela-ropa').value,
-    fedInsc: document.getElementById('input-form-fed-insc').value,
-    fedRopa: document.getElementById('input-form-fed-ropa').value,
-    packEscuelaImg: cur.packEscuelaImg||'',
-    packFedImg: cur.packFedImg||''
-  };
-  db.ref('data/config/forms').set(forms).then(function(){ toast('Formularios guardados'); }).catch(function(err){ toast('Error: '+err.message); });
+['input-title','input-form-escuela-insc','input-form-escuela-ropa','input-form-fed-insc','input-form-fed-ropa',
+ 'input-campus-activo','input-campus-titulo','input-campus-intro','input-campus-items','input-campus-fechas',
+ 'input-campus-horario','input-campus-precio','input-campus-cierre','input-campus-pie','input-campus-url'
+].forEach(function(id){
+  var el = document.getElementById(id);
+  if (!el) return;
+  var ev = (el.type === 'checkbox') ? 'change' : 'input';
+  el.addEventListener(ev, function(){ configDirty = true; updatePendingBadge(); });
 });
 
 
@@ -693,30 +913,30 @@ function setupListeners() {
   db.ref('data/gallery').on('value', function(snap){
     var val = snap.val();
     if (val && Object.keys(val).length) { cachedGallery = val; }
-    else {
+    else if (val === null && !gallerySeeded && typeof FALLBACK_GALLERY !== 'undefined') {
+      // Solo sembrar la PRIMERA vez (galería inexistente). Si el admin la vació
+      // a propósito, no volver a inyectar las fotos de ejemplo.
+      gallerySeeded = true;
       cachedGallery = {};
-      if (typeof FALLBACK_GALLERY !== 'undefined') {
-        FALLBACK_GALLERY.forEach(function(item,i){ cachedGallery['fallback_'+i] = item; });
-        var up = {};
-        FALLBACK_GALLERY.forEach(function(item){ var k=pushId(); up['data/gallery/'+k] = { src: item.src||'', timestamp: item.timestamp||Date.now() }; });
-        db.ref().update(up).catch(function(e){ console.warn('Seed a Firebase falló:', e); });
-      }
+      var up = {};
+      FALLBACK_GALLERY.forEach(function(item){ var k=pushId(); up['data/gallery/'+k] = { src: item.src||'', timestamp: item.timestamp||Date.now() }; });
+      db.ref().update(up).catch(function(e){ console.warn('Seed a Firebase falló:', e); });
     }
+    else { cachedGallery = {}; }
     cacheSet('cud_gallery_fb', cachedGallery);
     renderGallery();
   });
   db.ref('data/sponsors').on('value', function(snap){
     var val = snap.val();
     if (val && Object.keys(val).length) { cachedSponsors = val; }
-    else {
+    else if (val === null && !sponsorsSeeded && typeof FALLBACK_SPONSORS !== 'undefined') {
+      sponsorsSeeded = true;
       cachedSponsors = {};
-      if (typeof FALLBACK_SPONSORS !== 'undefined') {
-        FALLBACK_SPONSORS.forEach(function(item,i){ cachedSponsors['fallback_'+i] = item; });
-        var up = {};
-        FALLBACK_SPONSORS.forEach(function(item){ var k=pushId(); up['data/sponsors/'+k] = { name: item.name||'', tier: item.tier||'', img: item.img||'', url: item.url||'' }; });
-        db.ref().update(up).catch(function(e){ console.warn('Seed a Firebase falló:', e); });
-      }
+      var up = {};
+      FALLBACK_SPONSORS.forEach(function(item){ var k=pushId(); up['data/sponsors/'+k] = { name: item.name||'', tier: item.tier||'', img: item.img||'', url: item.url||'' }; });
+      db.ref().update(up).catch(function(e){ console.warn('Seed a Firebase falló:', e); });
     }
+    else { cachedSponsors = {}; }
     cacheSet('cud_sponsors_fb', cachedSponsors);
     renderSponsors();
   });
@@ -776,7 +996,9 @@ function showAuth() {
 function showAdmin() {
   document.getElementById('auth-screen').style.display = 'none';
   document.getElementById('admin-panel').style.display = 'block';
+  clearStaged();
   renderFromCache();
+  updatePendingBadge();
   if (db) setupListeners();
   else toast('Firebase no disponible — solo caché local');
 }
@@ -893,22 +1115,25 @@ function currentSponsorsData() {
 }
 
 document.getElementById('btn-sync-now').addEventListener('click', function(){
+  if (pendingCount() > 0) {
+    if (!confirm('Tienes cambios sin aplicar. ¿Quieres aplicar y sincronizar todo ahora con el botón "Aplicar cambios"?')) return;
+    document.getElementById('btn-apply-changes').click();
+    return;
+  }
   var btn=this; btn.disabled=true; btn.textContent='Sincronizando…';
   setSyncStatus('Subiendo datos a Firebase…','info');
   if (!db) { setSyncStatus('Firebase no disponible. No se pudo sincronizar.','err'); btn.textContent='Sincronizar ahora'; btn.disabled=false; return; }
   var updates = {};
-  var gal = currentGalleryData();
-  var spo = currentSponsorsData();
-  updates['data/gallery']=gal;
-  updates['data/sponsors']=spo;
-  var s = cachedConfig&&cachedConfig.logo ? cachedConfig : defaultConfig;
-  updates['data/config']=s;
+  updates['data/gallery']=currentGalleryData();
+  updates['data/sponsors']=currentSponsorsData();
+  updates['data/config']=collectConfigUpdate();
   db.ref().update(updates).then(function(){
     setSyncStatus('Datos sincronizados correctamente en Firebase','ok');
     toast('Datos sincronizados');
     btn.textContent='Sincronizar ahora'; btn.disabled=false;
   }).catch(function(err){
     setSyncStatus('Error: '+err.message,'err');
+    toast('Error: '+err.message);
     btn.textContent='Sincronizar ahora'; btn.disabled=false;
   });
 });
@@ -940,6 +1165,8 @@ document.getElementById('btn-import').addEventListener('change', function(){
 
 document.getElementById('btn-reset').addEventListener('click', function(){
   if(!confirm('¿Seguro que quieres restablecer todos los datos a sus valores por defecto? Esta acción no se puede deshacer.')) return;
+  if (pendingCount() > 0 && !confirm('Tienes cambios sin aplicar que se perderán. ¿Continuar?')) return;
+  clearStaged();
   var updates = {};
   updates['data/gallery']=null;
   updates['data/sponsors']=null;
