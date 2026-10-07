@@ -707,7 +707,7 @@ function renderGallery() {
   grid.innerHTML = items.map(function(it){
     var badge = it.kind === 'new' ? '<span class="pending-badge">Nueva</span>' : '';
     var btn = it.kind === 'new'
-      ? '<button class="btn-danger" data-gal-unstage="' + escAttr(it.key)">Quitar</button>'
+      ? '<button class="btn-danger" data-gal-unstage="' + escAttr(it.key) + '">Quitar</button>'
       : '<button class="btn-danger" data-gal-del="' + escAttr(it.key) + '">Eliminar</button>';
     return '<div class="gallery-admin-item">' + badge +
       '<img src="' + escAttr(it.src) + '" alt="">' +
