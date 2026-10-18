@@ -514,11 +514,30 @@ function compressImage(file, maxDim, quality, cb){
   reader.readAsDataURL(file);
 }
 
-var CACHE_VER = 3;
-function cacheSet(key, val) { try { localStorage.setItem(key + '_v' + CACHE_VER, JSON.stringify(val)); } catch(e){} }
+var CACHE_VER = 4;
+  function cacheSet(key, val) { try { localStorage.setItem(key + '_v' + CACHE_VER, JSON.stringify(val)); } catch(e){ console.warn('[cache] no se pudo guardar ' + key + ' (' + (e && e.name ? e.name : 'error') + ')'); } }
 function cacheGet(key, def) { try { var r = localStorage.getItem(key + '_v' + CACHE_VER); return r ? JSON.parse(r) : def; } catch(e) { return def; } }
-// clear old unversioned caches
-try { ['cud_gallery_cache','cud_reviews_cache','cud_sponsors_cache','cud_config_cache','cud_gallery_fb','cud_sponsors_fb'].forEach(function(k){ localStorage.removeItem(k); }); } catch(e){}
+// localStorage tiene ~5MB de cuota. Las fotos en base64 la desbordan y hacen
+// fallar la escritura en silencio, así que no se guardan en el caché.
+function lightForCache(obj) {
+  if (!obj || typeof obj !== 'object') return obj;
+  var out = {};
+  for (var k in obj) {
+    if (!Object.prototype.hasOwnProperty.call(obj, k)) continue;
+    var v = obj[k];
+    if (v && typeof v === 'object' && v.indexOf === undefined) out[k] = lightForCache(v);
+    else out[k] = (typeof v === 'string' && v.indexOf('data:') === 0 && v.length > 200000) ? '' : v;
+  }
+  return out;
+}
+// Libera cuota: borra versiones antiguas del caché (v1-v3 y sin versión)
+try {
+  ['cud_gallery_cache','cud_reviews_cache','cud_sponsors_cache','cud_config_cache',
+   'cud_gallery_fb','cud_sponsors_fb','cud_pending_fb','cud_config_fb'].forEach(function(k){
+    localStorage.removeItem(k);
+    for (var v = 0; v < 4; v++) localStorage.removeItem(k + '_v' + v);
+  });
+} catch(e){}
 
 </script>
 
@@ -562,7 +581,8 @@ document.addEventListener('DOMContentLoaded', function(){
 
   var galleryData = (typeof FALLBACK_GALLERY !== 'undefined') ? FALLBACK_GALLERY.slice() : [];
   var cachedGallery = cacheGet('cud_gallery_cache', null);
-  if (cachedGallery && cachedGallery.length) galleryData = cachedGallery;
+  // Si hay caché (aunque sea vacía, p.ej. borrado intencionado) se respeta.
+  if (cachedGallery !== null && cachedGallery !== undefined) galleryData = cachedGallery;
   var reviewsCache = cacheGet('cud_reviews_cache', []);
   renderGalleryVisual(combineAndSort(galleryData, reviewsCache));
 
@@ -578,7 +598,7 @@ document.addEventListener('DOMContentLoaded', function(){
     db.ref('data/config').on('value', function(snap){
       try {
         var val = snap.val();
-        if (val) { cacheSet('cud_config_cache', val); applyConfig(val); }
+        if (val) { cacheSet('cud_config_cache', lightForCache(val)); applyConfig(val); }
       } catch(e) {}
     });
 
@@ -598,7 +618,7 @@ document.addEventListener('DOMContentLoaded', function(){
         // Si existe pero está vacío, es un borrado intencionado: mostrar vacío.
         if (val === null && typeof FALLBACK_GALLERY !== 'undefined') arr = FALLBACK_GALLERY;
         cacheSet('cud_gallery_cache', arr);
-        renderCombinedGallery();
+        renderCombinedGallery(arr);
       } catch(e) {}
     });
 
@@ -613,7 +633,7 @@ document.addEventListener('DOMContentLoaded', function(){
           arr.sort(function(a, b){ return (b.timestamp || 0) - (a.timestamp || 0); });
         }
         cacheSet('cud_reviews_cache', arr);
-        renderCombinedGallery();
+        renderCombinedGallery(undefined, arr);
       } catch(e) {}
     });
 
@@ -664,7 +684,7 @@ document.addEventListener('DOMContentLoaded', function(){
     if (campusSec) {
       var c = s.campus || {};
       var cd = defaults.campus;
-      function cv(key){ return (c[key] === undefined || c[key] === null) ? cd[key] : c[key]; }
+      function cv(key){ return (c[key] === undefined || c[key] === null || c[key] === '') ? cd[key] : c[key]; }
       campusSec.style.display = ((c.activo === undefined) ? cd.activo : !!c.activo) ? 'block' : 'none';
       var cel;
       cel = document.getElementById('campus-titulo'); if (cel) cel.textContent = cv('titulo');
@@ -699,9 +719,17 @@ document.addEventListener('DOMContentLoaded', function(){
     return combined;
   }
 
-  function renderCombinedGallery(){
-    var g = cacheGet('cud_gallery_cache', []);
-    var r = cacheGet('cud_reviews_cache', []);
+  // IMPORTANT: renderiza con los datos EN MEMORIA que acaba de entregar Firebase.
+  // localStorage solo se usa como fallback si no se pasan datos (p.ej. primera carga
+  // instantánea o si la escritura en caché falló por cuota agotada).
+  var liveGallery = null;
+  var liveReviews = null;
+
+  function renderCombinedGallery(galleryArr, reviewsArr){
+    if (galleryArr !== undefined) liveGallery = galleryArr;
+    if (reviewsArr !== undefined) liveReviews = reviewsArr;
+    var g = (liveGallery !== null) ? liveGallery : cacheGet('cud_gallery_cache', []);
+    var r = (liveReviews !== null) ? liveReviews : cacheGet('cud_reviews_cache', []);
     renderGalleryVisual(combineAndSort(g, r));
   }
 
